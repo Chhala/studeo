@@ -6,16 +6,23 @@ function piocher(phrases) {
   return phrases[Math.floor(Math.random() * phrases.length)];
 }
 
+// ["a"] → "a" ; ["a", "b"] → "a ou b" ; ["a", "b", "c"] → "a, b ou c".
+function listeAvecOu(formes) {
+  if (formes.length <= 1) return formes[0] ?? "";
+  return `${formes.slice(0, -1).join(", ")} ou ${formes[formes.length - 1]}`;
+}
+
 // Formulations groupées par moment de la session plutôt qu'une seule banque générique : on
 // évite ainsi un "on est presque à la fin" à la 2ᵉ question sur 20.
 // `precedenteCorrecte` : la réponse à la question d'avant était bonne — seules les phrases qui
 // félicitent n'ont de sens qu'après une réussite.
 export function phraseQuestion(motFrancais, position, total, precedenteCorrecte = false) {
   const restant = total - position + 1;
-  // Un mot à formes multiples ("salut / bonjour") n'a qu'une seule forme prononcée dans une
-  // phrase narrée — cohérent avec bonneReponseAffichee côté anglais (quizEngine.js), qui ne
-  // garde elle aussi que la première forme.
-  const mot = motFrancais.split(" / ")[0].trim();
+  // Un mot à formes multiples ("bien / en forme") est dit en entier, relié par « ou » : dire seulement
+  // la première forme laissait l'ambiguïté (« bien » → l'enfant répondait « good » au lieu de « fine »).
+  // Côté anglais, la bonne réponse affichée reste la première forme (quizEngine.js), et toutes les
+  // formes sont acceptées.
+  const mot = listeAvecOu(motFrancais.split(" / ").map((forme) => forme.trim()).filter(Boolean));
   // Un mot qui porte déjà sa ponctuation ("comment vas-tu ?") ne doit pas être suivi d'un second
   // signe de fin de phrase ("comment vas-tu ?." / "comment vas-tu ? ?").
   const fin = (ponctuation) => (/[?!]$/.test(mot) ? "" : ponctuation);

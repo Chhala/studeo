@@ -260,14 +260,14 @@ export function openFormMot(motExistant, onEnregistrer, verifier = null) {
       <form id="form-mot">
         <div class="champ-formulaire">
           <label for="champ-anglais">Mot en anglais</label>
-          <input id="champ-anglais" type="text" required lang="en" spellcheck="true" autocomplete="off" autocapitalize="none" autocorrect="on">
+          <input id="champ-anglais" type="text" lang="en" spellcheck="true" autocomplete="off" autocapitalize="none" autocorrect="on">
         </div>
         <div class="champ-formulaire">
           <label for="champ-francais">Traduction en français</label>
-          <input id="champ-francais" type="text" required lang="fr" spellcheck="true" autocomplete="off" autocapitalize="none" autocorrect="on">
+          <input id="champ-francais" type="text" lang="fr" spellcheck="true" autocomplete="off" autocapitalize="none" autocorrect="on">
         </div>
         <div id="erreur-form" class="erreur-formulaire" role="alert"></div>
-        <button type="submit" class="bouton-cta principal" style="width:100%;justify-content:center;">
+        <button type="submit" id="bouton-form-mot" class="bouton-cta principal" style="width:100%;justify-content:center;">
           ${estModification ? "Enregistrer" : "Ajouter"}
         </button>
       </form>
@@ -275,18 +275,42 @@ export function openFormMot(motExistant, onEnregistrer, verifier = null) {
   `;
   const voile = appShell.montrerVoile(html, { position: "bas" });
   const formulaire = voile.querySelector("#form-mot");
-  formulaire.addEventListener("input", () => { voile.querySelector("#erreur-form").textContent = ""; });
+  const champAnglais = voile.querySelector("#champ-anglais");
+  const champFrancais = voile.querySelector("#champ-francais");
+  const bouton = voile.querySelector("#bouton-form-mot");
+  const libelleValider = estModification ? "Enregistrer" : "Ajouter";
+
+  // Les deux champs vides + valider = annuler (le clavier masque facilement la sortie de ce formulaire) :
+  // le bouton le dit en passant de « Ajouter » / « Enregistrer » à « Annuler » (décision §5.46).
+  const majBouton = () => {
+    const vides = !champAnglais.value.trim() && !champFrancais.value.trim();
+    bouton.textContent = vides ? "Annuler" : libelleValider;
+  };
+  formulaire.addEventListener("input", () => {
+    voile.querySelector("#erreur-form").textContent = "";
+    majBouton();
+  });
   // Valeurs injectées via .value (et non dans le gabarit HTML) : un mot contenant un
   // guillemet ou un "&" ne peut ainsi pas casser le champ.
   if (estModification) {
-    voile.querySelector("#champ-anglais").value = motExistant.motAnglais;
-    voile.querySelector("#champ-francais").value = motExistant.traductionFrancais;
+    champAnglais.value = motExistant.motAnglais;
+    champFrancais.value = motExistant.traductionFrancais;
   }
+  majBouton();
   formulaire.addEventListener("submit", (evenement) => {
     evenement.preventDefault();
-    const motAnglais = voile.querySelector("#champ-anglais").value.trim();
-    const traductionFrancais = voile.querySelector("#champ-francais").value.trim();
-    if (!motAnglais || !traductionFrancais) return;
+    const motAnglais = champAnglais.value.trim();
+    const traductionFrancais = champFrancais.value.trim();
+    if (!motAnglais && !traductionFrancais) {
+      appShell.fermerVoile(voile);
+      return;
+    }
+    if (!motAnglais || !traductionFrancais) {
+      // Un seul champ rempli : on le dit et on place le curseur sur celui qui manque.
+      voile.querySelector("#erreur-form").textContent = "Il faut le mot et sa traduction.";
+      (motAnglais ? champFrancais : champAnglais).focus();
+      return;
+    }
     const erreur = verifier ? verifier({ motAnglais, traductionFrancais }) : null;
     if (erreur) {
       voile.querySelector("#erreur-form").textContent = erreur;

@@ -148,7 +148,7 @@ export const CHARACTERS_CONFIG = [
     }
   },
   {
-    id: "slime", nom: "Slime", coutEtoiles: 7, echelle: 1.3, decalageY: 12, rebond: ["walk", "jump"],
+    id: "slime", nom: "Slimo", coutEtoiles: 7, echelle: 1.3, decalageY: 12, rebond: ["walk", "jump"],
     animations: {
       idle: [{ frames: 12 }],
       walk: [{ frames: 10 }], // substitut : animation "Move"
