@@ -1,0 +1,1117 @@
+/* ==========================================================================
+   Studeo — Design tokens
+   Palette rouge/corail kawaii, validée sur les maquettes de référence.
+   ========================================================================== */
+
+:root {
+  --accent: #C23444;
+  --accent-soft: #FFD9D3;
+  --gold: #FFB627;
+  --danger: #A02C36;
+  --text-dark: #4A3439;
+  --text-muted: #8A5458;
+  --icon-inactive: #C08585;
+  --bg-app: #FFF3EF;
+  --bg-card: #FFFFFF;
+  --status-a-revoir-bg: #FDEDEA;
+  --status-a-revoir-icon: #C9847E;
+  --scrim: rgba(74, 52, 57, 0.45);
+
+  --radius-lg: 26px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --radius-pill: 999px;
+
+  /* Repli pour la hauteur de viewport sur les navigateurs sans support de dvh ;
+     recalculé en JS dans app.js (voir ajusterHauteurApp). */
+  --app-height: 100vh;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overscroll-behavior: none; /* empêche le "rebond" façon page web sur iOS/Android */
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg-app);
+  color: var(--text-dark);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-display { font-family: 'Baloo 2', sans-serif; }
+
+button, input {
+  font-family: inherit;
+}
+
+/* ==========================================================================
+   Coquille applicative — faux plein écran avec zones sûres iOS/Android
+   ========================================================================== */
+
+#app-shell {
+  position: fixed;
+  inset: 0;
+  height: var(--app-height);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+#fond-actif {
+  position: absolute;
+  inset: -6%; /* légèrement plus grand que l'écran : marge pour le déplacement parallaxe */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  z-index: 0;
+  transition: transform 0.1s linear;
+}
+
+.fond-respiration {
+  animation: respiration 26s ease-in-out infinite alternate;
+}
+
+@keyframes respiration {
+  from { transform: scale(1.0) translate(0, 0); }
+  to   { transform: scale(1.05) translate(-1.5%, -1%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fond-respiration { animation: none; }
+}
+
+#app-view {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ==========================================================================
+   En-tête commun
+   ========================================================================== */
+
+.entete {
+  padding: 16px 24px 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* Titre de page dans une pastille blanche, comme le compteur d'étoiles : posé directement sur le
+   fond d'écran, le rouge devenait illisible sur certains fonds (décision §5.43). */
+.entete-titre {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 27px;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  background: var(--bg-card);
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.18);
+}
+
+.chip-etoiles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.14);
+  border: none;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-dark);
+  position: relative;
+}
+
+/* Effet "étoile gagnée" sur le compteur de l'accueil (appShell.animerGainEtoiles, décision
+   §5.32) : l'étoile saute avec une onde dorée, le chiffre rebondit, et une pastille blanche
+   "+1" monte au-dessus — blanche pour rester lisible quel que soit le fond d'écran. */
+.chip-etoiles .etoile-chip { position: relative; display: inline-flex; }
+.chip-etoiles .chiffre-chip { display: inline-block; }
+
+.chip-etoiles.gain { animation: chip-pop 0.7s ease-out; }
+.chip-etoiles.gain .etoile-chip svg { animation: etoile-saut 0.7s ease-out; }
+.chip-etoiles.gain .chiffre-chip { animation: chiffre-pop 0.5s ease-out 0.25s; }
+
+/* L'onde est invisible au repos (opacity: 0) : sinon, une fois l'animation terminée,
+   l'élément reprendrait son style de base et resterait affiché autour de l'étoile. */
+.chip-etoiles .etoile-chip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  opacity: 0;
+  pointer-events: none;
+}
+.chip-etoiles.gain .etoile-chip::after { animation: etoile-onde 0.7s ease-out; }
+
+.plus-un {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 2;
+  padding: 1px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.25);
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--accent);
+  pointer-events: none;
+  animation: plus-un 1.4s ease-out forwards;
+}
+
+@keyframes chip-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.14); box-shadow: 0 0 0 6px rgba(245, 184, 48, 0.35), 0 3px 10px rgba(194, 52, 68, 0.14); }
+  100% { transform: scale(1); }
+}
+@keyframes etoile-saut {
+  0% { transform: translateY(0) scale(1) rotate(0); }
+  35% { transform: translateY(-5px) scale(1.6) rotate(-18deg); }
+  65% { transform: translateY(0) scale(1.2) rotate(8deg); }
+  100% { transform: translateY(0) scale(1) rotate(0); }
+}
+@keyframes etoile-onde {
+  0% { transform: scale(0.8); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes chiffre-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); color: var(--accent); }
+  100% { transform: scale(1); }
+}
+/* Trajet court (≈20px) : la pastille reste dans la marge au-dessus du compteur. Elle apparaît
+   vite, reste lisible environ 1 s (de 15 % à 70 % de la durée) puis s'efface en finissant de monter —
+   trop brève (0,7 s), on la ratait en regardant ailleurs. */
+@keyframes plus-un {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.8); }
+  15% { opacity: 1; transform: translate(-50%, -4px) scale(1.1); }
+  70% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -14px) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-etoiles.gain,
+  .chip-etoiles.gain .etoile-chip svg,
+  .chip-etoiles.gain .etoile-chip::after,
+  .chip-etoiles.gain .chiffre-chip { animation: none; }
+  .plus-un { display: none; }
+}
+
+.bouton-icone {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bouton-icone.plus-rouge {
+  background: var(--accent);
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.3);
+}
+
+/* ==========================================================================
+   Cartes génériques
+   ========================================================================== */
+
+.carte {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.badge-icone {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.badge-icone.etat-a-revoir {
+  background: var(--status-a-revoir-bg);
+}
+
+/* ==========================================================================
+   Accueil
+   ========================================================================== */
+
+.contenu-scroll {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 24px 16px 24px;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.carte-mascotte {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 14px rgba(194, 52, 68, 0.08);
+  flex-shrink: 0;
+}
+
+.avatar-mascotte {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-mascotte img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Les sprites partagent un même canevas dimensionné pour couvrir toute l'animation
+     (ex. bras tendu en marche) : la pose statique s'y retrouve décentrée à gauche.
+     Décalage correctif mesuré empiriquement sur plusieurs personnages (~7-13%, 10% en
+     moyenne) — voir décision §5.20 de CLAUDE.md. */
+  /* Ordre voulu : translateY (descente visuelle exacte, sans être multipliée par l'échelle),
+     puis scale, puis translateX (le décalage correctif reste de 10 % de l'image quelle que
+     soit l'échelle). Variables : --echelle-sprite (1) et --decalage-y-sprite (0%), voir
+     characters.config.js. */
+  transform: translateY(var(--decalage-y-sprite, 0%)) scale(var(--echelle-sprite, 1)) translateX(10%);
+}
+
+/* Rebond vers le haut de Slime pendant sa marche et sa victoire (classe posée par
+   SpriteAnimator selon `rebond` dans characters.config.js). Utilise les
+   propriétés CSS individuelles `translate` et `scale`, qui se combinent avec le `transform`
+   du sprite (échelle, décalages) au lieu de le remplacer. */
+.glisse { animation: glisse-slime 0.5s ease-in-out infinite; }
+@keyframes glisse-slime {
+  0%, 100% { translate: 0 0; scale: 1 1; }
+  30% { translate: 0 -6%; scale: 0.94 1.1; }
+  62% { translate: 0 0; scale: 1.1 0.9; }
+}
+@media (prefers-reduced-motion: reduce) { .glisse { animation: none; } }
+
+.avatar-mascotte .repli {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #E8A79F;
+  border-radius: inherit;
+  box-sizing: border-box;
+}
+
+.bulle-mascotte {
+  font-weight: 700;
+  font-size: 14.5px;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+.grille-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.stat-carte {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  width: 100%;
+}
+
+.stat-valeur {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--text-dark);
+}
+
+.stat-label {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.carte-reussite { flex-shrink: 0; }
+
+.barre-progression {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  overflow: hidden;
+}
+
+.barre-progression-remplissage {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.groupe-cta {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.bouton-cta {
+  height: 64px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  cursor: pointer;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.bouton-cta.principal {
+  border: none;
+  background: var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 8px 18px rgba(194, 52, 68, 0.32);
+}
+
+.bouton-cta.secondaire {
+  border: 2px solid var(--accent);
+  background: var(--bg-card);
+  color: var(--accent);
+}
+
+.bouton-cta-sous-titre {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  display: block;
+}
+
+/* ==========================================================================
+   Navigation basse
+   ========================================================================== */
+
+.nav-basse {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: var(--bg-card);
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -6px 20px rgba(194, 52, 68, 0.10);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.nav-item.actif { color: var(--accent); }
+.nav-item svg { stroke: var(--icon-inactive); }
+.nav-item.actif svg { stroke: var(--accent); }
+
+/* ==========================================================================
+   Mes Mots
+   ========================================================================== */
+
+.barre-recherche {
+  flex: 1;
+  height: 44px;
+  background: var(--bg-card);
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.08);
+}
+
+.barre-recherche input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text-dark);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Carte avatar + recherche de "Mes Mots" : identique au bandeau de l'Accueil (.carte-
+   mascotte, même avatar), le champ de recherche tenant lieu de bulle — son placeholder
+   reprend donc la typographie et la couleur de .bulle-mascotte. Toute la carte est
+   cliquable (elle ouvre le clavier). */
+.carte-recherche-mots { cursor: text; }
+
+.carte-recherche-mots input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14.5px;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+.carte-recherche-mots input::placeholder {
+  color: var(--text-dark);
+  opacity: 1;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.segmented {
+  margin: 14px 24px 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(194, 52, 68, 0.06);
+}
+
+.segmented button {
+  flex: 1;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.segmented button[aria-current="true"] {
+  background: var(--accent);
+  color: #FFFFFF;
+}
+
+.liste-mots {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Fondu haut et bas strictement symétriques (--fondu-liste) : des lignes blanches
+     coupées net contre le sélecteur de filtre (en haut) ou la barre de navigation (en
+     bas), blancs eux aussi, se confondaient avec eux. Le padding égal à la hauteur du
+     fondu garde première et dernière lignes entièrement opaques aux extrémités du scroll ;
+     la marge identique en haut et en bas laisse le même espace avant chaque barre. */
+  --fondu-liste: 14px;
+  margin: 6px 0;
+  padding: var(--fondu-liste) 24px;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fondu-liste), #000 calc(100% - var(--fondu-liste)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fondu-liste), #000 calc(100% - var(--fondu-liste)), transparent 100%);
+}
+
+.ligne-mot-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.ligne-mot {
+  background: var(--bg-card);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s ease;
+  touch-action: pan-y;
+}
+
+.ligne-mot-wrapper.ouverte .ligne-mot {
+  transform: translateX(-96px);
+}
+
+.ligne-mot-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 96px;
+  display: flex;
+  z-index: 0;
+  /* Cachés tant que la ligne n'est pas glissée : sinon leur rouge transparaît en filet
+     sur les coins arrondis droits de la ligne. Le délai laisse la ligne se refermer
+     avant que les boutons ne disparaissent. */
+  visibility: hidden;
+  transition: visibility 0s linear 0.2s;
+}
+
+.ligne-mot-wrapper.ouverte .ligne-mot-actions {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.ligne-mot-actions button {
+  flex: 1;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ligne-mot-actions .modifier { background: var(--accent); }
+.ligne-mot-actions .supprimer { background: var(--danger); }
+
+.mot-texte { flex: 1; min-width: 0; }
+.mot-anglais { font-weight: 700; font-size: 15px; color: var(--text-dark); }
+.mot-francais { font-weight: 600; font-size: 12.5px; color: var(--text-muted); }
+
+.bouton-audio {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Mon Album
+   ========================================================================== */
+
+.grille-album {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 12px;
+  row-gap: 22px; /* les étiquettes blanches sous les tuiles doivent respirer (décision §5.43) */
+  align-content: start;
+  padding: 16px 24px 24px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+}
+
+.tuile-collectible { position: relative; text-align: center; }
+
+.tuile-visuel {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.tuile-visuel img { width: 60%; height: 60%; object-fit: contain; transform: translateY(var(--decalage-y-sprite, 0%)) scale(var(--echelle-sprite, 1)) translateX(10%); }
+
+/* Fonds d'écran : la photo doit remplir toute la tuile (contrairement aux sprites de
+   personnages, qui restent des icônes flottantes sur fond coloré). object-position est
+   posé en inline dans albumView.js à partir du champ `focal` de backgrounds.config.js. */
+.tuile-visuel.tuile-fond img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: none;
+}
+
+.tuile-visuel.verrouille { background: #F0E4E2; }
+.tuile-visuel.verrouille img,
+.tuile-visuel.verrouille .repli { filter: grayscale(1) opacity(0.55); }
+
+.tuile-collectible.actif .tuile-visuel { border: 3px solid var(--accent); }
+
+.badge-coche {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  border: 2px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voile-cadenas {
+  position: absolute;
+  inset: 0;
+  background: rgba(74, 52, 57, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Le nom de chaque tuile est dans une étiquette blanche : posé directement sur le fond d'écran,
+   il était illisible sur certains fonds (décision §5.43). Le coût n'est plus écrit sur chaque
+   tuile mais une seule fois par onglet (.note-prix). */
+.etiquette {
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px 5px;
+  box-shadow: 0 2px 7px rgba(74, 52, 57, 0.14);
+}
+
+.tuile-nom {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text-dark);
+}
+
+.tuile-collectible.actif .tuile-nom { color: var(--accent); }
+.tuile-collectible.verrouille .tuile-nom { color: var(--text-muted); }
+
+.note-prix {
+  margin: 10px auto 0;
+  padding: 3px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--text-muted);
+  box-shadow: 0 2px 7px rgba(74, 52, 57, 0.14);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+}
+.note-prix svg { width: 13px; height: 13px; }
+.note-prix[hidden] { display: none; }
+
+/* ==========================================================================
+   Overlays — bottom sheet, modale de confirmation
+   ========================================================================== */
+
+.voile {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  z-index: 10;
+  display: flex;
+}
+
+.voile.bas { align-items: flex-end; }
+.voile.centre { align-items: center; justify-content: center; padding: 0 32px; }
+.voile.plein { background: transparent; }
+
+/* Aperçu plein écran d'un fond d'écran (achat/sélection) */
+.apercu-fond {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.apercu-fond-bas {
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.0) 100%);
+  padding: 60px 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px;
+}
+
+.apercu-fond-nom {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  color: #FFFFFF;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  margin-bottom: 16px;
+}
+
+.apercu-fond-actions { display: flex; gap: 10px; }
+
+.feuille {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-card);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  padding: 14px 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18);
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+.poignee {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: #E8CFC9;
+  margin: 0 auto 18px;
+}
+
+.groupe-label {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.ligne-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.ligne-action.danger-fort { color: var(--danger); font-weight: 800; }
+.ligne-action.danger-modere { color: var(--danger); }
+
+.icone-cercle {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icone-cercle.danger-fort { background: var(--danger); }
+.icone-cercle.danger-modere {
+  background: #FFFFFF;
+  border: 2px solid var(--danger);
+  box-sizing: border-box;
+}
+
+.separateur { height: 1px; background: #F2E1DD; margin: 12px 0; }
+
+.boite-dialogue {
+  width: 100%;
+  max-width: 310px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 26px 22px 22px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.boite-dialogue-icone {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boite-dialogue-icone.achat { background: var(--accent); }
+
+.boite-dialogue-titre {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.boite-dialogue-message {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.boite-dialogue-actions { display: flex; gap: 10px; }
+
+.bouton-dialogue {
+  flex: 1;
+  height: 48px;
+  border-radius: 16px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.bouton-dialogue.annuler {
+  border: 2px solid var(--accent);
+  background: #FFFFFF;
+  color: var(--accent);
+}
+
+.bouton-dialogue.confirmer-danger {
+  border: none;
+  background: var(--danger);
+  color: #FFFFFF;
+}
+
+.bouton-dialogue.confirmer {
+  border: none;
+  background: var(--accent);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   Formulaire d'ajout / modification de mot
+   ========================================================================== */
+
+.champ-formulaire { margin-bottom: 14px; text-align: left; }
+
+.champ-formulaire label {
+  display: block;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.champ-formulaire input {
+  width: 100%;
+  height: 46px;
+  border-radius: 14px;
+  border: 2px solid var(--accent-soft);
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-dark);
+  outline: none;
+}
+
+.champ-formulaire input:focus { border-color: var(--accent); }
+
+/* Message d'erreur du formulaire d'ajout de mot (ex. doublon) : l'emplacement est réservé
+   pour que le bouton ne saute pas quand le message apparaît. */
+.erreur-formulaire {
+  min-height: 18px;
+  margin: 2px 0 10px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* ==========================================================================
+   Accessibilité — focus visible partout
+   ========================================================================== */
+
+button:focus-visible, input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Écran de session (quiz)
+   ========================================================================== */
+
+.ecran-session {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;
+  gap: 20px;
+}
+
+.session-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.bouton-sortie-session {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(194, 52, 68, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.session-question {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 24px;
+  gap: 18px;
+  text-align: center;
+}
+
+.session-mot-francais {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--text-dark);
+}
+
+.session-input {
+  width: 100%;
+  max-width: 240px;
+  height: 56px;
+  border-radius: 20px;
+  border: 2px solid var(--accent-soft);
+  background: var(--bg-card);
+  padding: 0 18px;
+  font-weight: 700;
+  font-size: 17px;
+  text-align: center;
+  outline: none;
+  color: var(--text-dark);
+}
+
+.session-input:focus { border-color: var(--accent); }
+
+.session-valider {
+  height: 56px;
+  border: none;
+  border-radius: 20px;
+  background: var(--accent);
+  color: #FFFFFF;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(194, 52, 68, 0.32);
+}
+
+/* Case mot (réponse correcte / mauvaise réponse de l'enfant) affichée après soumission —
+   toujours la même largeur, que le contenu soit court ou long (voir décision CLAUDE.md
+   §27) : largeur fixée sur la case elle-même ET sur son conteneur parent, pour ne jamais
+   dépendre d'un parent flex qui la réduirait à la taille du texte. */
+.boite-mot {
+  width: 100%;
+  max-width: 240px;
+  height: 56px;
+  border-radius: 20px;
+  border: 2px solid var(--accent-soft);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 18px;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text-dark);
+  gap: 8px;
+}
+
+.boite-mot.correct { border-color: #6FBE8C; }
+.boite-mot.incorrect { border-color: var(--danger); }
+
+.boite-mot span.mot {
+  flex: 1;
+  text-align: center;
+}
+
+.boite-mot button.audio-interne {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Hauteur réservée en permanence (vide si la réponse était juste), pour que le bouton
+   "Continuer" ne change jamais de position selon l'issue de la réponse. */
+.espace-correction {
+  width: 100%;
+  max-width: 240px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
