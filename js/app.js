@@ -92,30 +92,44 @@ function afficherBanniereInstallation(plateforme) {
 // appareil / cette version d'iOS et on ne touche à rien). Décision §5.44.
 function compenserBarreEtatIOS() {
   const shell = document.getElementById("app-shell");
+  const vue = document.getElementById("app-view");
   window.__diagCoquille = "compensation iOS : non";
-  if (!shell || window.navigator.standalone !== true) return;
+  if (!shell || !vue || window.navigator.standalone !== true) return;
 
   shell.style.height = ""; // revient à la hauteur naturelle (top/bottom: 0) avant de mesurer
 
+  // Marge du haut : on lit celle que la page applique RÉELLEMENT (padding-top de #app-view, qui vaut
+  // env(safe-area-inset-top) en CSS et décale déjà les en-têtes de 62 pt sur l'iPhone) ; une sonde
+  // posée en JS avait renvoyé 0 sur l'appareil, sans doute lue trop tôt ou différemment.
   const sonde = document.createElement("div");
   sonde.style.cssText = "position:fixed;top:0;left:0;width:0;visibility:hidden;padding-top:env(safe-area-inset-top, 0px);";
   document.body.appendChild(sonde);
-  const inset = parseFloat(getComputedStyle(sonde).paddingTop) || 0;
+  const insetSonde = parseFloat(getComputedStyle(sonde).paddingTop) || 0;
   sonde.remove();
+  const insetVue = parseFloat(getComputedStyle(vue).paddingTop) || 0;
+  const inset = Math.max(insetSonde, insetVue);
 
   const hauteur = shell.getBoundingClientRect().height;
   const ecran = Math.max(window.screen.width, window.screen.height);
+  const vv = window.visualViewport;
+  const mesures = `sonde ${Math.round(insetSonde)}, vue ${Math.round(insetVue)}, vv ${vv ? Math.round(vv.height) + "@" + Math.round(vv.offsetTop) : "?"}, html ${document.documentElement.clientHeight}`;
+
   if (inset > 0 && window.innerHeight > window.innerWidth && hauteur + inset <= ecran + 1) {
     shell.style.height = `${hauteur + inset}px`;
-    window.__diagCoquille = `compensation iOS : +${Math.round(inset)}`;
+    window.__diagCoquille = `compensation iOS : +${Math.round(inset)} (${mesures})`;
   } else {
-    window.__diagCoquille = `compensation iOS : non (inset ${Math.round(inset)})`;
+    window.__diagCoquille = `compensation iOS : non (${mesures})`;
   }
 }
 compenserBarreEtatIOS();
+// Rejouée quand la page a fini de s'afficher : les marges de sécurité peuvent ne pas être connues au
+// tout premier passage.
 window.addEventListener("resize", compenserBarreEtatIOS);
 window.addEventListener("orientationchange", compenserBarreEtatIOS);
 window.addEventListener("pageshow", compenserBarreEtatIOS);
+window.addEventListener("load", compenserBarreEtatIOS);
+setTimeout(compenserBarreEtatIOS, 400);
+setTimeout(compenserBarreEtatIOS, 1500);
 
 // ---------- Service worker ----------
 // Appelée AVANT demarrer() : demarrer() attend le chargement des voix (await audioEngine.init()) et
