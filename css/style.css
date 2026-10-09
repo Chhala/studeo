@@ -449,7 +449,10 @@ html.ios-app #app-shell { position: absolute; bottom: auto; height: 100lvh; }
   align-items: center;
   justify-content: space-around;
   background: var(--bg-card);
-  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+  /* Marge du bas = 45 % de la zone de l'indicateur d'accueil (34 pt sur iPhone) + 10 px : les pictos
+     descendent près du bord sans toucher l'indicateur, qui est tout en bas (≈ 8 à 13 pt du bord).
+     Avant : 12 px + 100 % de la zone = 46 pt, pictos « très éloignés du bas » (décision §5.44). */
+  padding: 12px 12px calc(10px + env(safe-area-inset-bottom, 0px) * 0.45) 12px;
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
   box-shadow: 0 -6px 20px rgba(194, 52, 68, 0.10);
