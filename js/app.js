@@ -9,14 +9,6 @@ import * as uiRenderer from "./uiRenderer.js";
 import * as installPrompt from "./installPrompt.js";
 import * as appShell from "./appShell.js";
 
-// ---------- Faux plein écran : repli pour les navigateurs sans support de 100dvh ----------
-function ajusterHauteurApp() {
-  document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
-}
-window.addEventListener("resize", ajusterHauteurApp);
-window.addEventListener("orientationchange", ajusterHauteurApp);
-ajusterHauteurApp();
-
 // ---------- Démarrage ----------
 async function demarrer() {
   dataStore.init();

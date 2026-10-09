@@ -21,10 +21,6 @@
   --radius-md: 20px;
   --radius-sm: 14px;
   --radius-pill: 999px;
-
-  /* Repli pour la hauteur de viewport sur les navigateurs sans support de dvh ;
-     recalculé en JS dans app.js (voir ajusterHauteurApp). */
-  --app-height: 100vh;
 }
 
 * { box-sizing: border-box; }
@@ -53,11 +49,17 @@ button, input {
    Coquille applicative — faux plein écran avec zones sûres iOS/Android
    ========================================================================== */
 
+/* Aucune hauteur explicite (ni vh, ni dvh, ni innerHeight) : la coquille est épinglée aux 4 bords de
+   la fenêtre. Sur iPhone en mode application (viewport-fit=cover + barre d'état translucide), 100vh /
+   100dvh / innerHeight excluent la hauteur de la barre d'état (≈ 62 px) alors que la page s'étend
+   dessous : la coquille s'arrêtait donc ≈ 62 px avant le bas de l'écran (menu décollé du bord,
+   fond et aperçu plein écran coupés). Décision §5.44. */
 #app-shell {
   position: fixed;
-  inset: 0;
-  height: var(--app-height);
-  height: 100dvh;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
