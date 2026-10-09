@@ -66,6 +66,20 @@ button, input {
   background: var(--bg-app);
 }
 
+/* ---- Laboratoire d'affichage iOS (TEMPORAIRE, décision §5.44) ----------------------------------
+   Sur iPhone en mode application la fenêtre fait 812 pt pour un écran de 874 pt (lvh = 874, svh = 812) et
+   rien n'est dessiné dans les 62 pt du bas. Un tap sur la ligne grise du menu ⋮ fait défiler les modes
+   ci-dessous (attribut data-labo sur <html>, non mémorisé) pour trouver, sur l'appareil, celui qui
+   permet à la barre du bas de toucher le bord. À supprimer une fois la solution trouvée. */
+html[data-labo="1"] #app-shell { bottom: auto; height: 100lvh; }
+html[data-labo="2"], html[data-labo="2"] body { height: 100lvh; }
+html[data-labo="2"] #app-shell { position: absolute; bottom: auto; height: 100lvh; }
+html[data-labo="3"] #app-shell { bottom: auto; height: 100lvh; transform: translateZ(0); }
+html[data-labo="4"] { background: #FFFFFF; }
+html[data-labo="5"] #app-shell { top: 0; bottom: calc(-1 * env(safe-area-inset-top, 0px)); }
+html[data-labo="6"], html[data-labo="6"] body { position: fixed; top: 0; left: 0; right: 0; height: 100lvh; overflow: hidden; }
+html[data-labo="6"] #app-shell { position: absolute; bottom: auto; height: 100lvh; }
+
 #fond-actif {
   position: absolute;
   inset: -6%; /* légèrement plus grand que l'écran : marge pour le déplacement parallaxe */

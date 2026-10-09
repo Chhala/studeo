@@ -215,15 +215,30 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
   // Ligne de diagnostic discrète : version de l'app réellement chargée (nom du cache du service
   // worker) et tailles mesurées — utile pour vérifier qu'un téléphone a bien reçu la dernière
   // version, et pour comprendre un défaut d'affichage propre à un appareil.
-  const remplirVersion = (nomCache) => {
+  let nomCacheAffiche = "version ?";
+  const remplirVersion = () => {
     const shell = document.getElementById("app-shell").getBoundingClientRect();
+    const labo = document.documentElement.dataset.labo || "0";
     voile.querySelector("#info-version").textContent =
-      `${nomCache} · fenêtre ${window.innerWidth}×${window.innerHeight} · app ${Math.round(shell.width)}×${Math.round(shell.height)} · écran ${screen.width}×${screen.height} · ${window.__diagCoquille || "mesures ?"}`;
+      `${nomCacheAffiche} · fenêtre ${window.innerWidth}×${window.innerHeight} · app ${Math.round(shell.width)}×${Math.round(shell.height)} · écran ${screen.width}×${screen.height} · ${window.__diagCoquille || "mesures ?"} · MODE ${labo}/6 — touche ici pour changer`;
   };
+  // Laboratoire d'affichage (temporaire, voir style.css) : un tap sur cette ligne passe au mode suivant.
+  const ligneVersion = voile.querySelector("#info-version");
+  ligneVersion.style.cursor = "pointer";
+  ligneVersion.style.padding = "10px 0";
+  ligneVersion.addEventListener("click", () => {
+    const suivant = ((parseInt(document.documentElement.dataset.labo || "0", 10) + 1) % 7);
+    if (suivant === 0) delete document.documentElement.dataset.labo;
+    else document.documentElement.dataset.labo = String(suivant);
+    remplirVersion();
+  });
   if (window.caches) {
-    caches.keys().then((noms) => remplirVersion(noms.filter((n) => n.startsWith("studeo-")).join(", ") || "sans cache")).catch(() => remplirVersion("version ?"));
+    caches.keys()
+      .then((noms) => { nomCacheAffiche = noms.filter((n) => n.startsWith("studeo-")).join(", ") || "sans cache"; })
+      .catch(() => {})
+      .finally(remplirVersion);
   } else {
-    remplirVersion("version ?");
+    remplirVersion();
   }
 
   voile.querySelector('[data-role="export-complet"]').addEventListener("click", () => { fermer(); onExportComplet(); });
