@@ -218,7 +218,7 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
   const remplirVersion = (nomCache) => {
     const shell = document.getElementById("app-shell").getBoundingClientRect();
     voile.querySelector("#info-version").textContent =
-      `${nomCache} · fenêtre ${window.innerWidth}×${window.innerHeight} · app ${Math.round(shell.width)}×${Math.round(shell.height)} · écran ${screen.width}×${screen.height} · ${window.__diagCoquille || "compensation iOS : ?"}`;
+      `${nomCache} · fenêtre ${window.innerWidth}×${window.innerHeight} · app ${Math.round(shell.width)}×${Math.round(shell.height)} · écran ${screen.width}×${screen.height} · ${window.__diagCoquille || "mesures ?"}`;
   };
   if (window.caches) {
     caches.keys().then((noms) => remplirVersion(noms.filter((n) => n.startsWith("studeo-")).join(", ") || "sans cache")).catch(() => remplirVersion("version ?"));
