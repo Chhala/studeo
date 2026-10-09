@@ -82,6 +82,41 @@ function afficherBanniereInstallation(plateforme) {
   }
 }
 
+// ---------- Compensation de la barre d'état sur iPhone en mode application ----------
+// Mesuré sur un iPhone 17 Pro (menu ⋮, ligne de diagnostic) : écran 402×874, mais fenêtre ET coquille
+// 402×812 alors que la page s'étend sous la barre d'état translucide. iOS retire donc la hauteur de la
+// barre d'état (≈ 62 pt) de la fenêtre (innerHeight, vh, dvh) tout en laissant la page démarrer en haut
+// de l'écran : même épinglée aux 4 bords, la coquille s'arrête 62 pt trop tôt (bande vide en bas).
+// On lui rend cette hauteur : hauteur mesurée + safe-area-inset-top, uniquement sur iOS en mode
+// application, et seulement si le résultat ne dépasse pas l'écran (sinon le défaut n'existe pas sur cet
+// appareil / cette version d'iOS et on ne touche à rien). Décision §5.44.
+function compenserBarreEtatIOS() {
+  const shell = document.getElementById("app-shell");
+  window.__diagCoquille = "compensation iOS : non";
+  if (!shell || window.navigator.standalone !== true) return;
+
+  shell.style.height = ""; // revient à la hauteur naturelle (top/bottom: 0) avant de mesurer
+
+  const sonde = document.createElement("div");
+  sonde.style.cssText = "position:fixed;top:0;left:0;width:0;visibility:hidden;padding-top:env(safe-area-inset-top, 0px);";
+  document.body.appendChild(sonde);
+  const inset = parseFloat(getComputedStyle(sonde).paddingTop) || 0;
+  sonde.remove();
+
+  const hauteur = shell.getBoundingClientRect().height;
+  const ecran = Math.max(window.screen.width, window.screen.height);
+  if (inset > 0 && window.innerHeight > window.innerWidth && hauteur + inset <= ecran + 1) {
+    shell.style.height = `${hauteur + inset}px`;
+    window.__diagCoquille = `compensation iOS : +${Math.round(inset)}`;
+  } else {
+    window.__diagCoquille = `compensation iOS : non (inset ${Math.round(inset)})`;
+  }
+}
+compenserBarreEtatIOS();
+window.addEventListener("resize", compenserBarreEtatIOS);
+window.addEventListener("orientationchange", compenserBarreEtatIOS);
+window.addEventListener("pageshow", compenserBarreEtatIOS);
+
 // ---------- Service worker ----------
 // Appelée AVANT demarrer() : demarrer() attend le chargement des voix (await audioEngine.init()) et
 // peut finir après l'évènement "load" ; l'écouteur posé à la fin de demarrer() n'était alors
