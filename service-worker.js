@@ -5,7 +5,7 @@
 // Duplication assumée : les identifiants ci-dessous reprennent characters.config.js et
 // backgrounds.config.js. En modifier un, penser à répercuter ici et à incrémenter CACHE_NAME.
 
-const CACHE_NAME = "studeo-cache-v57";
+const CACHE_NAME = "studeo-cache-v59";
 
 const CHARACTER_ANIMATIONS_FRAMES = {
   tanuki: { idle: [12], walk: [12, 12], jump: [8], hurt: [6, 10] },
@@ -76,11 +76,16 @@ function cheminsFonds() {
 
 // Met en cache chaque ressource indépendamment : une image pas encore fournie (404) ne fait
 // jamais échouer l'installation du service worker ni le cache des autres fichiers.
-async function precacherResilient(cache, urls) {
+//
+// `forcerReseau` : ignore le cache HTTP du navigateur. GitHub Pages sert les fichiers avec
+// "Cache-Control: max-age=600" : sans cela, une mise à jour installée dans les 10 minutes suivant
+// la dernière visite recopiait dans le nouveau cache les ANCIENS fichiers (CSS/JS) encore dans le
+// cache HTTP, et l'appareil restait sur l'ancienne version.
+async function precacherResilient(cache, urls, { forcerReseau = false } = {}) {
   await Promise.allSettled(
     urls.map(async (url) => {
       try {
-        const reponse = await fetch(url);
+        const reponse = await fetch(url, forcerReseau ? { cache: "reload" } : undefined);
         if (reponse.ok) await cache.put(url, reponse);
       } catch (erreur) {
         // Asset absent pour l'instant (pack pas encore fourni) : on l'ignore silencieusement,
@@ -94,7 +99,7 @@ self.addEventListener("install", (evenement) => {
   evenement.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      await precacherResilient(cache, FICHIERS_COQUILLE);
+      await precacherResilient(cache, FICHIERS_COQUILLE, { forcerReseau: true });
       await precacherResilient(cache, cheminsSprites());
       await precacherResilient(cache, cheminsFonds());
       self.skipWaiting();

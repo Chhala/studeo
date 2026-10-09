@@ -39,7 +39,6 @@ async function demarrer() {
   );
 
   initInstallation();
-  enregistrerServiceWorker();
 }
 
 // ---------- Installation PWA ----------
@@ -84,13 +83,20 @@ function afficherBanniereInstallation(plateforme) {
 }
 
 // ---------- Service worker ----------
+// Appelée AVANT demarrer() : demarrer() attend le chargement des voix (await audioEngine.init()) et
+// peut finir après l'évènement "load" ; l'écouteur posé à la fin de demarrer() n'était alors
+// jamais déclenché et le service worker ne s'enregistrait jamais (pas de cache, pas de mode
+// hors-ligne, pas de mise à jour contrôlée — décision §5.44).
 function enregistrerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
-  window.addEventListener("load", () => {
+  const enregistrer = () => {
     navigator.serviceWorker.register("./service-worker.js").catch((erreur) => {
       console.error("Studeo: échec d'enregistrement du service worker.", erreur);
     });
-  });
+  };
+  if (document.readyState === "complete") enregistrer();
+  else window.addEventListener("load", enregistrer, { once: true });
 }
 
+enregistrerServiceWorker();
 demarrer();

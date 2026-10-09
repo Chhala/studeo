@@ -206,10 +206,25 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
       </button>
 
       <input type="file" id="input-import-fichier" accept="application/json" class="visually-hidden">
+      <div id="info-version" style="margin-top:14px;text-align:center;font-size:10.5px;font-weight:600;color:var(--text-muted);opacity:.75;"></div>
     </div>
   `;
   const voile = appShell.montrerVoile(html, { position: "bas" });
   const fermer = () => appShell.fermerVoile(voile);
+
+  // Ligne de diagnostic discrète : version de l'app réellement chargée (nom du cache du service
+  // worker) et tailles mesurées — utile pour vérifier qu'un téléphone a bien reçu la dernière
+  // version, et pour comprendre un défaut d'affichage propre à un appareil.
+  const remplirVersion = (nomCache) => {
+    const shell = document.getElementById("app-shell").getBoundingClientRect();
+    voile.querySelector("#info-version").textContent =
+      `${nomCache} · fenêtre ${window.innerWidth}×${window.innerHeight} · app ${Math.round(shell.width)}×${Math.round(shell.height)} · écran ${screen.width}×${screen.height}`;
+  };
+  if (window.caches) {
+    caches.keys().then((noms) => remplirVersion(noms.filter((n) => n.startsWith("studeo-")).join(", ") || "sans cache")).catch(() => remplirVersion("version ?"));
+  } else {
+    remplirVersion("version ?");
+  }
 
   voile.querySelector('[data-role="export-complet"]').addEventListener("click", () => { fermer(); onExportComplet(); });
   voile.querySelector('[data-role="export-vocabulaire"]').addEventListener("click", () => { fermer(); onExportVocabulaire(); });
