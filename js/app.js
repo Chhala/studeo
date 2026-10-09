@@ -82,40 +82,6 @@ function afficherBanniereInstallation(plateforme) {
   }
 }
 
-// ---------- Diagnostic d'affichage (affiché en bas du menu ⋮) ----------
-// Aucune modification de la mise en page : on mesure seulement. Sur un iPhone 17 Pro en mode application,
-// la fenêtre (innerHeight) fait 812 pt pour un écran de 874 pt et RIEN n'est dessiné au-delà de 812 pt,
-// même un élément agrandi à 874 pt (essai v60/v61 : barre du bas et ligne de diagnostic coupées). Une
-// compensation en JS ne peut donc pas fonctionner ; ces mesures servent à comprendre la cause (décision
-// §5.44). Unités : vh / lvh / svh / dvh mesurées sur un élément fixe, marges haute et basse réelles.
-function mesurerAffichage() {
-  const vue = document.getElementById("app-view");
-  if (!vue) return;
-  const sonde = document.createElement("div");
-  sonde.style.cssText = "position:fixed;top:0;left:0;width:0;visibility:hidden;";
-  document.body.appendChild(sonde);
-  const h = (valeur) => {
-    sonde.style.height = valeur;
-    return Math.round(sonde.getBoundingClientRect().height);
-  };
-  const unites = `vh ${h("100vh")} lvh ${h("100lvh")} svh ${h("100svh")} dvh ${h("100dvh")}`;
-  sonde.style.height = "0";
-  sonde.style.paddingTop = "env(safe-area-inset-top, 0px)";
-  sonde.style.paddingBottom = "env(safe-area-inset-bottom, 0px)";
-  const haut = Math.round(parseFloat(getComputedStyle(sonde).paddingTop) || 0);
-  const bas = Math.round(parseFloat(getComputedStyle(sonde).paddingBottom) || 0);
-  sonde.remove();
-  const vv = window.visualViewport;
-  window.__diagCoquille =
-    `${window.navigator.standalone === true ? "mode application" : "navigateur"} · ${unites} · marges haut ${haut} bas ${bas}` +
-    ` · vv ${vv ? Math.round(vv.height) + "@" + Math.round(vv.offsetTop) : "?"} · html ${document.documentElement.clientHeight}` +
-    ` · dpr ${window.devicePixelRatio}`;
-}
-mesurerAffichage();
-window.addEventListener("load", mesurerAffichage);
-window.addEventListener("pageshow", mesurerAffichage);
-window.addEventListener("resize", mesurerAffichage);
-setTimeout(mesurerAffichage, 1500);
 // ---------- Service worker ----------
 // Appelée AVANT demarrer() : demarrer() attend le chargement des voix (await audioEngine.init()) et
 // peut finir après l'évènement "load" ; l'écouteur posé à la fin de demarrer() n'était alors

@@ -145,8 +145,9 @@ function openReglageEtoiles() {
 // pas de double confirmation sur "Acheter"/"Choisir" : l'action est immédiate, la
 // prévisualisation plein écran fait déjà office d'étape de confirmation visuelle.
 export function openApercuFond(fond, onValider) {
-  // Le coût n'est plus écrit sur le bouton : il est dit une fois par onglet dans l'album.
-  const boutonLabel = fond.debloque ? "Choisir ce fond" : "Débloquer";
+  // L'aperçu n'est ouvert que pour un fond encore verrouillé (un fond débloqué se choisit directement
+  // depuis l'album) ; le coût n'est plus écrit sur le bouton : il est dit une fois par onglet.
+  const boutonLabel = "Débloquer";
 
   const html = `
     <div class="apercu-fond" style="background-image:url('${fond.image ?? ""}'); background-position:${fond.focal || "center"};">
@@ -206,29 +207,10 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
       </button>
 
       <input type="file" id="input-import-fichier" accept="application/json" class="visually-hidden">
-      <div id="info-version" style="margin-top:14px;text-align:center;font-size:10.5px;font-weight:600;color:var(--text-muted);opacity:.75;"></div>
     </div>
   `;
   const voile = appShell.montrerVoile(html, { position: "bas" });
   const fermer = () => appShell.fermerVoile(voile);
-
-  // Ligne de diagnostic discrète : version de l'app réellement chargée (nom du cache du service
-  // worker) et tailles mesurées — utile pour vérifier qu'un téléphone a bien reçu la dernière
-  // version, et pour comprendre un défaut d'affichage propre à un appareil.
-  let nomCacheAffiche = "version ?";
-  const remplirVersion = () => {
-    const shell = document.getElementById("app-shell").getBoundingClientRect();
-    voile.querySelector("#info-version").textContent =
-      `${nomCacheAffiche} · fenêtre ${window.innerWidth}×${window.innerHeight} · app ${Math.round(shell.width)}×${Math.round(shell.height)} · écran ${screen.width}×${screen.height} · ${window.__diagCoquille || "mesures ?"}`;
-  };
-  if (window.caches) {
-    caches.keys()
-      .then((noms) => { nomCacheAffiche = noms.filter((n) => n.startsWith("studeo-")).join(", ") || "sans cache"; })
-      .catch(() => {})
-      .finally(remplirVersion);
-  } else {
-    remplirVersion();
-  }
 
   voile.querySelector('[data-role="export-complet"]').addEventListener("click", () => { fermer(); onExportComplet(); });
   voile.querySelector('[data-role="export-vocabulaire"]').addEventListener("click", () => { fermer(); onExportVocabulaire(); });

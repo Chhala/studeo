@@ -124,8 +124,10 @@ function renderGrille() {
 
       const fond = catalogue.find((f) => f.id === id);
 
-      // "Épuré" n'a pas de photo à prévisualiser : sélection directe, comme avant.
-      if (!fond.image) {
+      // Sélection directe pour "Épuré" (pas de photo à prévisualiser) et pour tout fond déjà débloqué :
+      // l'aperçu plein écran ne sert qu'avant l'achat, le fond choisi s'affiche aussitôt derrière
+      // l'écran (décision §5.45).
+      if (!fond.image || fond.debloque) {
         themeEngine.essayerSelectionner(id);
         renderGrille();
         return;
