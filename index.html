@@ -11,6 +11,11 @@
 
 <title>Studeo</title>
 
+<!-- iPhone en mode application (écran d'accueil) : classe utilisée par style.css pour dimensionner la
+     coquille (la fenêtre annoncée par iOS est 62 pt trop courte, voir style.css et CLAUDE.md §5.44).
+     Script volontairement en ligne et immédiat : la classe doit exister avant le premier rendu. -->
+<script>if (window.navigator.standalone === true) document.documentElement.classList.add("ios-app");</script>
+
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
 <link rel="icon" href="./assets/icons/icon-192.png">
