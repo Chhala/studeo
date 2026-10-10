@@ -263,7 +263,7 @@ function traiterReponse(saisie) {
   zoneQuestion.innerHTML = `
     <div class="boite-mot correct">
       <span class="mot">${bonneReponseAffichee}</span>
-      <button type="button" id="bouton-audio-correction" class="audio-interne" aria-label="Écouter la prononciation">
+      <button type="button" id="bouton-audio-correction" class="audio-interne" data-sans-tap aria-label="Écouter la prononciation">
         ${icons.iconeHautParleur()}
       </button>
     </div>

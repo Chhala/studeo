@@ -127,7 +127,7 @@ function ligneMotHTML(mot) {
           <div class="mot-anglais">${echapperHTML(mot.motAnglais)}</div>
           <div class="mot-francais">${echapperHTML(mot.traductionFrancais)}</div>
         </div>
-        <button type="button" class="bouton-audio" data-role="audio" aria-label="Écouter la prononciation">
+        <button type="button" class="bouton-audio" data-role="audio" data-sans-tap aria-label="Écouter la prononciation">
           ${icons.iconeHautParleur()}
         </button>
       </div>
