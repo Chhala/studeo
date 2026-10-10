@@ -6,6 +6,7 @@ import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
 import * as audioEngine from "../audioEngine.js";
+import * as sons from "../sons.js";
 import * as router from "../router.js";
 import * as overlays from "../overlays.js";
 import * as icons from "../icons.js";
@@ -182,7 +183,10 @@ function wireLignes(conteneur) {
     wrapper.querySelector('[data-role="audio"]').addEventListener("click", (e) => {
       e.stopPropagation();
       const mot = dataStore.getMot(id);
-      if (mot) audioEngine.prononcer(mot.motAnglais);
+      if (mot) {
+        sons.couperVoix();   // la voix de la mascotte se tait pendant la prononciation
+        audioEngine.prononcer(mot.motAnglais);
+      }
     });
 
     wrapper.querySelector('[data-role="modifier"]').addEventListener("click", () => {
@@ -280,6 +284,7 @@ function renderCoquille(options = {}) {
 
   const champ = vue.querySelector("#wordsearch");
   const carteRecherche = vue.querySelector(".carte-recherche-mots");
+  sons.brancherFrappe(champ);
 
   // La mascotte "écrit" l'invite dans le placeholder (effet Animal Crossing, §26) — elle
   // s'efface donc naturellement dès que l'enfant commence à taper. Après un changement de

@@ -5,7 +5,7 @@
 // Duplication assumée : les identifiants ci-dessous reprennent characters.config.js et
 // backgrounds.config.js. En modifier un, penser à répercuter ici et à incrémenter CACHE_NAME.
 
-const CACHE_NAME = "studeo-cache-v68";
+const CACHE_NAME = "studeo-cache-v71";
 
 const CHARACTER_ANIMATIONS_FRAMES = {
   tanuki: { idle: [12], walk: [12, 12], jump: [8], hurt: [6, 10] },
@@ -42,6 +42,7 @@ const FICHIERS_COQUILLE = [
   "./js/quizEngine.js",
   "./js/rewardEngine.js",
   "./js/router.js",
+  "./js/sons.js",
   "./js/spriteAnimator.js",
   "./js/themeEngine.js",
   "./js/uiRenderer.js",

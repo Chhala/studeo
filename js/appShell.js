@@ -2,6 +2,8 @@
 // (zone de contenu, zone de fond) et un moyen commun d'afficher voiles et messages toast.
 // Aucune logique métier ici.
 
+import * as sons from "./sons.js";
+
 let refs = { shell: null, view: null, fond: null };
 
 export function init({ shell, view, fond }) {
@@ -82,6 +84,7 @@ export function animerGainEtoiles(chip, valeurDepart, valeurFinale, nbEtoiles) {
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     chiffre.textContent = valeurFinale;
+    sons.etoile();   // le son n'est pas un mouvement : un seul, quel que soit le nombre d'étoiles
     return;
   }
 
@@ -93,6 +96,7 @@ export function animerGainEtoiles(chip, valeurDepart, valeurFinale, nbEtoiles) {
       chip.classList.remove("gain");
       void chip.offsetWidth; // relance l'animation CSS
       chip.classList.add("gain");
+      sons.etoile();
 
       const plus = document.createElement("span");
       plus.className = "plus-un";
@@ -128,10 +132,12 @@ export function ecrireTexte(element, texte, { dureeCibleMs = 1800, cible = "text
   const delai = Math.min(35, Math.max(12, dureeCibleMs / Math.max(texte.length, 1)));
   ecrire("");
   let index = 0;
+  const voix = sons.creerVoix();   // un petit son toutes les 2 lettres (décision §5.48)
 
   element._minuteurEcriture = setInterval(() => {
     index += 1;
     ecrire(texte.slice(0, index));
+    voix(texte[index - 1]);
     if (index >= texte.length) clearInterval(element._minuteurEcriture);
   }, delai);
   return delai * texte.length;

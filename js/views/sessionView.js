@@ -16,6 +16,7 @@ import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as quizEngine from "../quizEngine.js";
 import * as audioEngine from "../audioEngine.js";
+import * as sons from "../sons.js";
 import * as characterEngine from "../characterEngine.js";
 import * as overlays from "../overlays.js";
 import * as router from "../router.js";
@@ -235,6 +236,7 @@ function renderQuestion() {
   const vue = appShell.getView();
   const champ = vue.querySelector("#champ-reponse");
   champ.focus();
+  sons.brancherFrappe(champ);
 
   vue.querySelector("#form-reponse").addEventListener("submit", (evenement) => {
     evenement.preventDefault();
@@ -255,6 +257,7 @@ function traiterReponse(saisie) {
   const { correct, bonneReponseAffichee } = quizEngine.soumettreReponse(session, saisie);
 
   characterEngine.jouerAnimation(correct ? "jump" : "hurt");
+  if (correct) sons.bonneReponse(); else sons.mauvaiseReponse();   // avant la voix : le son de jeu la couvre un instant
   appShell.ecrireTexte(bulle, correct ? mascotteTexte.phraseCorrecte() : mascotteTexte.phraseIncorrecte(bonneReponseAffichee));
 
   zoneQuestion.innerHTML = `
@@ -276,7 +279,10 @@ function traiterReponse(saisie) {
     zoneQuestion.querySelector("#mot-saisi").textContent = saisie.trim();
   }
 
-  vue.querySelector("#bouton-audio-correction").addEventListener("click", () => audioEngine.prononcer(bonneReponseAffichee));
+  vue.querySelector("#bouton-audio-correction").addEventListener("click", () => {
+    sons.couperVoix();   // la voix de la mascotte se tait pendant la prononciation
+    audioEngine.prononcer(bonneReponseAffichee);
+  });
   vue.querySelector("#bouton-continuer").addEventListener("click", () => {
     if (quizEngine.estTerminee(session)) {
       router.desactiverGarde();
@@ -335,6 +341,7 @@ function renderRecap() {
     </div>
   `;
 
+  if (scoreParfait) sons.scoreParfait();   // avant la voix : le son de jeu la couvre un instant
   lierMascotte("avatar-recap", texteMascotte);
   if (scoreParfait) characterEngine.jouerAnimation("jump");
 

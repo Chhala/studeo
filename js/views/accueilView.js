@@ -30,7 +30,7 @@ export function render() {
   appShell.getView().innerHTML = `
     <div class="entete">
       <div class="entete-titre font-display">Studeo</div>
-      <button type="button" class="chip-etoiles" data-role="aide-etoiles" style="border:none;cursor:pointer;"><span class="etoile-chip">${icons.iconeEtoile()}</span><span class="chiffre-chip">${etoiles - gain}</span></button>
+      <button type="button" class="chip-etoiles" data-role="aide-etoiles" data-sans-tap style="border:none;cursor:pointer;"><span class="etoile-chip">${icons.iconeEtoile()}</span><span class="chiffre-chip">${etoiles - gain}</span></button>
     </div>
 
     <div class="contenu-scroll">

@@ -80,7 +80,10 @@ function etatParDefaut() {
     // 2 ⭐ maximum par jour (décision §5.31). Repart à vide dès que le jour change.
     etoilesRevisionDuJour: { date: null, lots: [] },
     // Dernière date (locale) où l'étoile du Défi a été gagnée — plafonne à 1 ⭐ de base/jour.
-    derniereEtoileDefi: null
+    derniereEtoileDefi: null,
+    // Réglage de l'appareil (menu ⋮) : sons activés ou non (décision §5.48). Ce n'est pas de la
+    // progression : aucune réinitialisation n'y touche.
+    sonsActifs: true
   };
 }
 
@@ -227,6 +230,17 @@ export function enregistrerReponse(id, correct) {
     etat.totalReponses += 1;
     if (correct) etat.totalBonnesReponses += 1;
   }
+  sauvegarder();
+}
+
+// ---------- Sons ----------
+
+export function getSonsActifs() {
+  return etat.sonsActifs !== false;
+}
+
+export function definirSonsActifs(valeur) {
+  etat.sonsActifs = Boolean(valeur);
   sauvegarder();
 }
 

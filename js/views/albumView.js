@@ -50,7 +50,7 @@ function tuileHTML(item, type) {
     `;
 
   return `
-    <div class="tuile-collectible ${classeEtat}" data-id="${item.id}">
+    <div class="tuile-collectible ${classeEtat}" data-id="${item.id}"${type === "character" ? " data-sans-tap" : ""}>
       ${visuel}
       <div class="etiquette"><div class="tuile-nom">${item.nom}</div></div>
     </div>

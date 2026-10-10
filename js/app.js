@@ -3,6 +3,7 @@
 
 import * as dataStore from "./dataStore.js";
 import * as audioEngine from "./audioEngine.js";
+import * as sons from "./sons.js";
 import * as themeEngine from "./themeEngine.js";
 import * as router from "./router.js";
 import * as uiRenderer from "./uiRenderer.js";
@@ -12,6 +13,10 @@ import * as appShell from "./appShell.js";
 // ---------- Démarrage ----------
 async function demarrer() {
   dataStore.init();
+  // Sons : réglage de l'appareil, puis réveil du contexte audio à chaque geste de l'enfant (iPhone).
+  sons.definirActif(dataStore.getSonsActifs());
+  sons.armerDeblocage();
+  sons.brancherTaps();
   await audioEngine.init();
 
   appShell.init({

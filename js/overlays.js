@@ -4,6 +4,7 @@
 import * as appShell from "./appShell.js";
 import * as dataStore from "./dataStore.js";
 import * as characterEngine from "./characterEngine.js";
+import * as sons from "./sons.js";
 import * as icons from "./icons.js";
 
 // ---------- Boîte de confirmation générique ----------
@@ -61,6 +62,7 @@ export function openAideEtoiles() {
     </div>
   `;
   const voile = appShell.montrerVoile(html, { position: "centre" });
+  voile.setAttribute("data-sans-tap", "");   // ni à l'ouverture ni à la fermeture : pas de tic dans cette fenêtre
   const boite = voile.querySelector(".boite-dialogue");
 
   characterEngine.lierElementCompagnon(
@@ -173,11 +175,20 @@ export function openApercuFond(fond, onValider) {
 }
 
 // ---------- Menu options (⋮) ----------
+const libelleSons = () => (dataStore.getSonsActifs() ? "Sons : activés" : "Sons : désactivés");
+
 export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire, onResetComplet, onResetEtoiles }) {
   const html = `
     <div class="feuille" role="menu">
       <div class="poignee"></div>
 
+      <div class="groupe-label">Réglages</div>
+      <button type="button" class="ligne-action" data-role="sons" role="menuitemcheckbox" aria-checked="${dataStore.getSonsActifs()}">
+        <span class="icone-cercle">${icons.iconeHautParleur()}</span>
+        <span data-role="sons-libelle">${libelleSons()}</span>
+      </button>
+
+      <div class="separateur"></div>
       <div class="groupe-label">Sauvegarde de l'appareil</div>
       <button type="button" class="ligne-action" data-role="export-complet">
         <span class="icone-cercle">${icons.iconeTelecharger()}</span>
@@ -211,6 +222,17 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
   `;
   const voile = appShell.montrerVoile(html, { position: "bas" });
   const fermer = () => appShell.fermerVoile(voile);
+
+  // Le réglage « Sons » s'applique tout de suite et le menu reste ouvert : le libellé suit.
+  const boutonSons = voile.querySelector('[data-role="sons"]');
+  boutonSons.addEventListener("click", () => {
+    const actifs = !dataStore.getSonsActifs();
+    dataStore.definirSonsActifs(actifs);
+    sons.definirActif(actifs);
+    boutonSons.setAttribute("aria-checked", String(actifs));
+    boutonSons.querySelector('[data-role="sons-libelle"]').textContent = libelleSons();
+    if (actifs) sons.apercu();
+  });
 
   voile.querySelector('[data-role="export-complet"]').addEventListener("click", () => { fermer(); onExportComplet(); });
   voile.querySelector('[data-role="export-vocabulaire"]').addEventListener("click", () => { fermer(); onExportVocabulaire(); });
@@ -279,6 +301,8 @@ export function openFormMot(motExistant, onEnregistrer, verifier = null) {
   const champFrancais = voile.querySelector("#champ-francais");
   const bouton = voile.querySelector("#bouton-form-mot");
   const libelleValider = estModification ? "Enregistrer" : "Ajouter";
+  sons.brancherFrappe(champAnglais);
+  sons.brancherFrappe(champFrancais);
 
   // Les deux champs vides + valider = annuler (le clavier masque facilement la sortie de ce formulaire) :
   // le bouton le dit en passant de « Ajouter » / « Enregistrer » à « Annuler » (décision §5.46).
