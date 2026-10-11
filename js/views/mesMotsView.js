@@ -46,7 +46,9 @@ function parlerDansLeChamp(texte, dureeAffichageMs) {
   minuteurRetourInvite = setTimeout(() => {
     const courant = champRecherche();
     if (courant && courant.isConnected && document.activeElement !== courant) {
-      appShell.ecrireTexte(courant, INVITE, { cible: "placeholder" });
+      // L'invite revient d'un coup, sans écriture ni voix : la mascotte vient de parler (décision §5.49).
+      appShell.arreterEcriture(courant);
+      courant.placeholder = INVITE;
     }
   }, dureeEcriture + dureeAffichageMs);
 }
@@ -75,7 +77,7 @@ export function render(filtreInitial) {
   etatLocal.recherche = "";
   idLigneOuverte = null;
   indiceJoueCetteVisite = false;
-  renderCoquille();
+  renderCoquille({ arrivee: true });
 }
 
 function motsFiltres() {
@@ -291,10 +293,14 @@ function renderCoquille(options = {}) {
   // tri, elle dit à la place la phrase du tri (puis l'invite revient) ; si le champ contient
   // déjà du texte, le placeholder est invisible : la phrase passe alors par le petit message
   // temporaire.
+  // L'invite n'est écrite (avec sa voix) qu'à l'ARRIVÉE sur l'écran : aux rafraîchissements (filtre,
+  // ajout, modification, suppression, réinitialisation), elle est simplement là, déjà écrite, pour ne
+  // pas répéter la même phrase et les mêmes sons à chaque action (décision §5.49).
   if (options.messageTri && etatLocal.recherche.trim() === "") {
     parlerDansLeChamp(options.messageTri, DUREE_MESSAGE_TRI_MS);
   } else {
-    appShell.ecrireTexte(champ, INVITE, { cible: "placeholder" });
+    if (options.arrivee) appShell.ecrireTexte(champ, INVITE, { cible: "placeholder" });
+    else champ.placeholder = INVITE;
     if (options.messageTri) appShell.afficherToast(options.messageTri);
   }
 
