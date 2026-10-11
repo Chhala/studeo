@@ -97,7 +97,10 @@ function motsFiltres() {
   if (etatLocal.tri === "alphabetique") {
     mots.sort((a, b) => a.motAnglais.localeCompare(b.motAnglais));
   } else {
-    mots.sort((a, b) => (a.dateAjout === b.dateAjout ? a.id - b.id : a.dateAjout < b.dateAjout ? -1 : 1));
+    // Chronologique = les jours les plus récents EN HAUT (décision §5.50) : l'enfant retrouve ses dernières
+    // saisies sans descendre toute la liste. Au sein d'un même jour (un lot), l'ordre de saisie est conservé
+    // (premier saisi en haut), comme dans le cahier.
+    mots.sort((a, b) => (a.dateAjout === b.dateAjout ? a.id - b.id : a.dateAjout < b.dateAjout ? 1 : -1));
   }
   return mots;
 }
