@@ -10,6 +10,23 @@ export function init({ shell, view, fond }) {
   refs = { shell, view, fond };
 }
 
+// iPhone en mode application : à l'apparition du clavier, iOS fait glisser la page (visualViewport.pageTop
+// > 0) et toute la coquille remontait d'environ 60 pt (le ✕ passait sous l'heure, les boutons bougeaient
+// à chaque frappe). On la redescend en permanence de ce décalage : tout reste visuellement en place, que ce
+// soit en session ou dans le formulaire d'ajout de mot (dont les champs restent au-dessus du clavier).
+// Retenu après essai sur l'appareil de 5 variantes (décision §5.51) ; sans effet ailleurs (Safari en
+// onglet, Android, bureau).
+export function stabiliserClavierIOS() {
+  const vv = window.visualViewport;
+  if (!vv || !refs.shell || !document.documentElement.classList.contains("ios-app")) return;
+  const compenser = () => { refs.shell.style.transform = `translateY(${vv.pageTop}px)`; };
+  vv.addEventListener("resize", compenser);
+  vv.addEventListener("scroll", compenser);
+  window.addEventListener("scroll", compenser);
+  document.addEventListener("focusin", () => [0, 60, 200, 450].forEach((delai) => setTimeout(compenser, delai)));
+  compenser();
+}
+
 export function getView() {
   return refs.view;
 }

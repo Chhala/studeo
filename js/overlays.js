@@ -5,7 +5,6 @@ import * as appShell from "./appShell.js";
 import * as dataStore from "./dataStore.js";
 import * as characterEngine from "./characterEngine.js";
 import * as sons from "./sons.js";
-import * as labClavier from "./labClavier.js";
 import * as icons from "./icons.js";
 
 // ---------- Boîte de confirmation générique ----------
@@ -218,10 +217,6 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
         Réinitialiser étoiles &amp; achats
       </button>
 
-      <button type="button" class="ligne-action" data-role="lab-clavier" style="opacity:0.55;font-size:12px;margin-top:6px;">
-        <span data-role="lab-clavier-libelle">${labClavier.libelle()}</span>
-      </button>
-
       <input type="file" id="input-import-fichier" accept="application/json" class="visually-hidden">
     </div>
   `;
@@ -237,11 +232,6 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
     boutonSons.setAttribute("aria-checked", String(actifs));
     boutonSons.querySelector('[data-role="sons-libelle"]').textContent = libelleSons();
     if (actifs) sons.apercu();
-  });
-
-  // Laboratoire clavier (temporaire) : chaque tap passe au mode suivant, le menu reste ouvert.
-  voile.querySelector('[data-role="lab-clavier"]').addEventListener("click", () => {
-    voile.querySelector('[data-role="lab-clavier-libelle"]').textContent = labClavier.suivant();
   });
 
   voile.querySelector('[data-role="export-complet"]').addEventListener("click", () => { fermer(); onExportComplet(); });

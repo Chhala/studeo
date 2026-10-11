@@ -25,6 +25,8 @@ async function demarrer() {
     fond: document.getElementById("fond-actif")
   });
 
+  appShell.stabiliserClavierIOS();
+
   themeEngine.lierElementFond(document.getElementById("fond-actif"));
   themeEngine.initParallax();
 
