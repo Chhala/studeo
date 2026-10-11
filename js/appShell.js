@@ -5,6 +5,7 @@
 import * as sons from "./sons.js";
 
 let refs = { shell: null, view: null, fond: null };
+let recompenserClavier = null;   // renseignée par stabiliserClavierIOS (iPhone en mode application seulement)
 
 export function init({ shell, view, fond }) {
   refs = { shell, view, fond };
@@ -12,14 +13,19 @@ export function init({ shell, view, fond }) {
 
 // iPhone en mode application : à l'apparition du clavier, iOS fait glisser la page (visualViewport.pageTop
 // > 0) et toute la coquille remontait d'environ 60 pt (le ✕ passait sous l'heure, les boutons bougeaient
-// à chaque frappe). On la redescend en permanence de ce décalage : tout reste visuellement en place, que ce
-// soit en session ou dans le formulaire d'ajout de mot (dont les champs restent au-dessus du clavier).
-// Retenu après essai sur l'appareil de 5 variantes (décision §5.51) ; sans effet ailleurs (Safari en
-// onglet, Android, bureau).
+// à chaque frappe). On la redescend de ce décalage : tout reste visuellement en place sur les écrans
+// ancrés en haut (session, recherche de « Mes Mots »).
+// **Sauf quand un voile est ouvert** (formulaire d'ajout de mot, menu…) : ces panneaux sont collés en bas de
+// l'écran et ont BESOIN du glissement d'iOS pour apparaître au-dessus du clavier ; le compenser les laissait
+// entièrement recouverts (constaté sur l'appareil, décision §5.51). Sans effet hors iPhone en mode application.
 export function stabiliserClavierIOS() {
   const vv = window.visualViewport;
   if (!vv || !refs.shell || !document.documentElement.classList.contains("ios-app")) return;
-  const compenser = () => { refs.shell.style.transform = `translateY(${vv.pageTop}px)`; };
+  const compenser = () => {
+    const voileOuvert = refs.shell.querySelector(".voile") !== null;
+    refs.shell.style.transform = voileOuvert ? "" : `translateY(${vv.pageTop}px)`;
+  };
+  recompenserClavier = compenser;   // aussi rappelée à l'ouverture et à la fermeture d'un voile
   vv.addEventListener("resize", compenser);
   vv.addEventListener("scroll", compenser);
   window.addEventListener("scroll", compenser);
@@ -48,11 +54,13 @@ export function montrerVoile(contenuHTML, { position = "bas" } = {}) {
   });
 
   refs.shell.appendChild(voile);
+  if (recompenserClavier) recompenserClavier();
   return voile;
 }
 
 export function fermerVoile(voile) {
   if (voile && voile.parentNode) voile.parentNode.removeChild(voile);
+  if (recompenserClavier) recompenserClavier();
 }
 
 let minuteurToast = null;
