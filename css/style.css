@@ -74,6 +74,13 @@ button, input {
 html.ios-app,
 html.ios-app body { height: 100lvh; }
 html.ios-app #app-shell { position: absolute; bottom: auto; height: 100lvh; }
+
+/* LABORATOIRE CLAVIER (temporaire, js/labClavier.js) : correctifs candidats au décalage de la page quand le
+   clavier de l'iPhone apparaît. */
+html[data-lab-clavier="1"], html[data-lab-clavier="1"] body,
+html[data-lab-clavier="2"], html[data-lab-clavier="2"] body,
+html[data-lab-clavier="4"], html[data-lab-clavier="4"] body { overflow: hidden; }
+html[data-lab-clavier="4"] body { position: fixed; top: 0; left: 0; right: 0; }
 #fond-actif {
   position: absolute;
   inset: -6%; /* légèrement plus grand que l'écran : marge pour le déplacement parallaxe */
