@@ -7,6 +7,7 @@
 // donc aucune trace (ni statut de mot changé, ni étoile, ni taux de réussite).
 
 import * as dataStore from "./dataStore.js";
+import * as badgeEngine from "./badgeEngine.js";
 
 const SEUIL_DEFI = 0.8; // 80 % exigé
 // Révision : plus de seuil par passage — l'étoile est gagnée quand TOUS les mots du lot ont
@@ -276,6 +277,7 @@ export function finaliserSession(session) {
   // évoluer les statuts) — sinon une session qui vient de rendre des mots maîtrisés se
   // retrouverait à tort sans rien à apprendre (décision §5.39).
   let aApprendre;
+  let premierPassage = false; // Révision : premier passage terminé aujourd'hui pour ce lot (badge Ducky, §5.53)
   if (session.type === "revision") {
     // Les compléments du jour sont mémorisés seulement maintenant (session menée à son terme).
     if (session.complementsIds && session.complementsIds.length > 0) {
@@ -283,6 +285,7 @@ export function finaliserSession(session) {
     }
     aApprendre = dataStore.getAApprendreRevisionDuJour(session.dateAjout);
     if (aApprendre === undefined) {
+      premierPassage = true;
       // Premier passage terminé aujourd'hui pour ce lot : on fige la réponse pour la journée.
       const lot = dataStore.getMots().filter((m) => m.dateAjout === session.dateAjout);
       const complementsMots = (session.complementsIds || []).map((id) => dataStore.getMot(id)).filter(Boolean);
@@ -308,6 +311,8 @@ export function finaliserSession(session) {
   let motsRestants = 0;
   let tailleLot = 0;
   let rienAApprendre = false; // l'étoile aurait été méritée, mais il n'y a plus rien à apprendre
+  let lotValide = false;      // Révision : tous les mots du lot sont validés aujourd'hui (badge Bones)
+  let defiReussi = false;     // Défi : seuil de réussite atteint (badge Chicken)
   if (session.type === "revision") {
     dataStore.mettreAJourValidationRevision(
       session.dateAjout,
@@ -321,11 +326,13 @@ export function finaliserSession(session) {
     tailleLot = motsEffectifs.length;
 
     if (motsEffectifs.length > 0 && motsRestants === 0) {
+      lotValide = true;
       dataStore.marquerLotReussi(session.dateAjout);
       if (aApprendre) etoilesGagnees = dataStore.essayerCrediterEtoileRevision(session.dateAjout);
       else rienAApprendre = true;
     }
   } else if (pourcentage >= SEUIL_DEFI && totalNote > 0) {
+    defiReussi = true;
     if (aApprendre) {
       const porteLeBonus = LONGUEURS_BONUS_ELIGIBLES.includes(session.longueur) && session.longueur === longueurBonusDuJour();
       etoilesGagnees = dataStore.essayerCrediterEtoileDefi(porteLeBonus ? 1 : 0);
@@ -334,6 +341,19 @@ export function finaliserSession(session) {
       rienAApprendre = true;
     }
   }
+
+  // Badges (décision §5.53) : jour d'étude, Révision sans erreur, Défi de 20 parfait, Défi réussi,
+  // questionnaire réussi. Sans effet visible pendant la session : l'enfant verra la pastille sur
+  // « Mon Album » et épinglera son badge quand elle voudra.
+  badgeEngine.apresSession({
+    type: session.type,
+    longueur: session.longueur,
+    reponses: session.reponses,
+    premierPassage,
+    lotValide,
+    dateAjout: session.dateAjout,
+    defiReussi
+  });
 
   return {
     total: session.reponses.length,

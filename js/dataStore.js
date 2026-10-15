@@ -83,16 +83,48 @@ function etatParDefaut() {
     derniereEtoileDefi: null,
     // Réglage de l'appareil (menu ⋮) : sons activés ou non (décision §5.48). Ce n'est pas de la
     // progression : aucune réinitialisation n'y touche.
-    sonsActifs: true
+    sonsActifs: true,
+    // Badges (décision §5.53) : "obtenus" = condition remplie, "epingles" = étoiles reçues. Un badge
+    // obtenu n'est jamais retiré. Tanuki est offert d'office (badge cosmétique, 0 ⭐).
+    badges: badgesParDefaut(),
+    suiviBadges: suiviBadgesParDefaut()
+  };
+}
+
+function badgesParDefaut() {
+  return { obtenus: ["tanuki"], epingles: ["tanuki"] };
+}
+
+// Compteurs propres aux badges (ils partent de zéro : aucun historique n'existait avant eux) :
+//  - serie / dernierJourSerie : jours d'étude consécutifs (Bunny, Deer-Deer) ;
+//  - joursDefi : dates distinctes où un Défi a atteint 80 % (Chicken) ;
+//  - questionnaires : questionnaires de Révision réussis, 2 comptés par jour au maximum (Bones).
+function suiviBadgesParDefaut() {
+  return {
+    serie: 0,
+    dernierJourSerie: null,
+    joursDefi: [],
+    questionnaires: { total: 0, date: null, lots: [] }
   };
 }
 
 // "Jour" déterminé selon l'horloge locale de l'appareil (pas UTC, pas de serveur) — utilisé
 // pour la date d'ajout des mots, le plafond quotidien d'étoiles, et par quizEngine pour
 // calculer quelle longueur de Défi porte l'étoile bonus du jour (voir décision §5.25).
-export function dateLocaleAujourdhui() {
-  const d = new Date();
+function formaterDateLocale(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function dateLocaleAujourdhui() {
+  return formaterDateLocale(new Date());
+}
+
+// Veille, en jour de calendrier local : on recule d'un JOUR (setDate), pas de 24 h — un changement
+// d'heure (jour de 23 h ou 25 h) ne doit jamais fausser une série de jours (décision §5.53).
+export function dateLocaleHier() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return formaterDateLocale(d);
 }
 
 let etat = null;
@@ -465,6 +497,97 @@ export function setFondActif(id) {
   return true;
 }
 
+// ---------- Badges (décision §5.53) ----------
+
+const QUESTIONNAIRES_MAX_PAR_JOUR = 2;
+
+export function getBadgesEtat() {
+  return { obtenus: [...etat.badges.obtenus], epingles: [...etat.badges.epingles] };
+}
+
+export function badgeEstObtenu(id) {
+  return etat.badges.obtenus.includes(id);
+}
+
+// Renvoie true si le badge vient d'être obtenu (false s'il l'était déjà).
+export function marquerBadgeObtenu(id) {
+  if (etat.badges.obtenus.includes(id)) return false;
+  etat.badges.obtenus.push(id);
+  sauvegarder();
+  return true;
+}
+
+// Épingler = recevoir les étoiles d'un badge obtenu. Les étoiles vont directement au solde, SANS
+// passer par gainEtoilesEnAttente : l'effet est joué tout de suite sur l'écran « Mon Album », il
+// ne doit pas être rejoué à l'accueil.
+export function epinglerBadge(id, gain) {
+  if (!etat.badges.obtenus.includes(id) || etat.badges.epingles.includes(id)) return false;
+  etat.badges.epingles.push(id);
+  etat.totalEtoiles += gain;
+  sauvegarder();
+  return true;
+}
+
+export function getTotalBonnesReponses() {
+  return etat.totalBonnesReponses;
+}
+
+// Jour d'étude : une Révision ou un Défi terminé avec assez de bonnes réponses. Série stricte :
+// hier compte, un jour manqué la remet à 1. Renvoie la série courante.
+export function noterJourEtude() {
+  const suivi = etat.suiviBadges;
+  const aujourdHui = dateLocaleAujourdhui();
+  if (suivi.dernierJourSerie === aujourdHui) return suivi.serie;
+  suivi.serie = suivi.dernierJourSerie === dateLocaleHier() ? suivi.serie + 1 : 1;
+  suivi.dernierJourSerie = aujourdHui;
+  sauvegarder();
+  return suivi.serie;
+}
+
+// Série affichée à l'enfant : retombe à zéro dès qu'un jour est manqué (ni aujourd'hui ni hier).
+export function getSerieJoursEtude() {
+  const suivi = etat.suiviBadges;
+  const actif = suivi.dernierJourSerie === dateLocaleAujourdhui() || suivi.dernierJourSerie === dateLocaleHier();
+  return actif ? suivi.serie : 0;
+}
+
+// Série brute (non remise à zéro à l'affichage) : sert à décider si un badge est obtenu.
+export function getSerieJoursEtudeBrute() {
+  return etat.suiviBadges.serie;
+}
+
+export function noterDefiReussi() {
+  const jours = etat.suiviBadges.joursDefi;
+  const aujourdHui = dateLocaleAujourdhui();
+  if (jours.includes(aujourdHui)) return;
+  jours.push(aujourdHui);
+  sauvegarder();
+}
+
+export function getNbJoursDefiReussis() {
+  return etat.suiviBadges.joursDefi.length;
+}
+
+// Un questionnaire de Révision (= un lot validé dans la journée) compte une fois par lot et par
+// jour, 2 par jour au maximum (comme les étoiles de Révision). Renvoie true s'il a été compté.
+export function noterQuestionnaireReussi(dateAjout) {
+  const questionnaires = etat.suiviBadges.questionnaires;
+  const aujourdHui = dateLocaleAujourdhui();
+  if (questionnaires.date !== aujourdHui) {
+    questionnaires.date = aujourdHui;
+    questionnaires.lots = [];
+  }
+  if (questionnaires.lots.includes(dateAjout) || questionnaires.lots.length >= QUESTIONNAIRES_MAX_PAR_JOUR) return false;
+  questionnaires.lots.push(dateAjout);
+  questionnaires.total += 1;
+  sauvegarder();
+  return true;
+}
+
+export function getNbQuestionnairesReussis() {
+  return etat.suiviBadges.questionnaires.total;
+}
+
 // ---------- Export / Import ----------
 
 function telechargerJSON(objet, nomFichier) {
@@ -533,6 +656,10 @@ export function remiseAZeroComplete() {
   etat.etoilesRevisionDuJour = { date: null, lots: [] };
   etat.derniereEtoileDefi = null;
   etat.aideRecherche = { affichages: 0, utilisee: false };
+  // Les badges repartent aussi de zéro (sinon « 75 mots maîtrisés » resterait affiché avec 0 mot
+  // maîtrisé) ; « Réinitialiser étoiles & achats », elle, les conserve (décision §5.53).
+  etat.badges = badgesParDefaut();
+  etat.suiviBadges = suiviBadgesParDefaut();
   sauvegarder();
 }
 

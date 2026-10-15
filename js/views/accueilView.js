@@ -4,6 +4,7 @@ import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
 import * as quizEngine from "../quizEngine.js";
+import * as badgeEngine from "../badgeEngine.js";
 import * as overlays from "../overlays.js";
 import * as router from "../router.js";
 import * as icons from "../icons.js";
@@ -95,8 +96,8 @@ export function render() {
       <button type="button" class="nav-item" data-role="nav-mots">
         ${icons.iconeLivre(false)}<span>Mes Mots</span>
       </button>
-      <button type="button" class="nav-item" data-role="nav-album">
-        ${icons.iconeAlbum(false)}<span>Mon Album</span>
+      <button type="button" class="nav-item nav-album" data-role="nav-album">
+        ${icons.iconeAlbum(false)}<span>Mon Album</span>${badgeEngine.aBadgeEnAttente() ? '<i class="pastille-nav"></i>' : ""}
       </button>
     </nav>
   `;

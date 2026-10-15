@@ -1,4 +1,25 @@
 /* ==========================================================================
+   Polices hébergées dans le projet (assets/fonts/, licence SIL OFL 1.1 : textes joints).
+   Avant, Baloo 2 et Nunito étaient chargées depuis Google Fonts : hors connexion, le téléphone
+   retombait sur sa police système (largeurs de texte différentes). Polices variables, sous-ensemble
+   « latin » (couvre le français : accents, œ, guillemets, espaces insécables).
+   ========================================================================== */
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('../assets/fonts/baloo2-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('../assets/fonts/nunito-latin.woff2') format('woff2');
+}
+
+/* ==========================================================================
    Studeo — Design tokens
    Palette rouge/corail kawaii, validée sur les maquettes de référence.
    ========================================================================== */
@@ -765,6 +786,80 @@ html.ios-app #app-shell { position: absolute; bottom: auto; height: 100lvh; }
 }
 .note-prix svg { width: 13px; height: 13px; }
 .note-prix[hidden] { display: none; }
+
+/* ==========================================================================
+   Badges (décision §5.53) — 3ᵉ onglet de Mon Album
+   ========================================================================== */
+
+/* Les visuels de badges sont des PNG complets (pas des sprites décentrés) : ni compensation de 10 %
+   ni translation, et un peu plus grands que les sprites. */
+.tuile-visuel.tuile-badge img { width: 62%; height: 62%; transform: none; }
+
+/* Badge à épingler : cadre doré qui pulse + petite étoile (sans chiffre : le gain est révélé à
+   l'épinglage). */
+.tuile-visuel.pret {
+  box-shadow: 0 0 0 3px var(--gold), 0 0 18px 4px rgba(255, 182, 39, 0.6);
+  animation: lueur-badge 1.7s ease-in-out infinite alternate;
+}
+@keyframes lueur-badge {
+  from { box-shadow: 0 0 0 3px var(--gold), 0 0 10px 2px rgba(255, 182, 39, 0.4); }
+  to   { box-shadow: 0 0 0 3px var(--gold), 0 0 22px 7px rgba(255, 182, 39, 0.75); }
+}
+.pastille-gain {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  box-shadow: 0 2px 5px rgba(74, 52, 57, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pastille-gain svg { width: 13px; height: 13px; }
+.tuile-collectible.pret .tuile-nom { color: var(--accent); }
+
+/* Pastille « un badge attend » sur « Mon Album » (navigation, toutes les pages) : le rouge de Studeo,
+   liseré blanc, sans chiffre. */
+.nav-album { position: relative; }
+.pastille-nav {
+  position: absolute;
+  top: -3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  border: 2px solid #FFFFFF;
+}
+
+/* Fenêtre d'un badge : visuel en couleurs (jamais estompé) sur le rose des tuiles obtenues. */
+.tuile-dialogue {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 14px;
+  border-radius: 22px;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tuile-dialogue img { width: 62%; height: 62%; object-fit: contain; }
+.badge-barre {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: #F2E1DD;
+  overflow: hidden;
+  margin: 0 0 6px;
+}
+.badge-barre > i { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-pill); }
+.badge-progres-texte { font-weight: 800; font-size: 13px; color: var(--text-dark); margin-bottom: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tuile-visuel.pret { animation: none; }
+}
 
 /* ==========================================================================
    Overlays — bottom sheet, modale de confirmation

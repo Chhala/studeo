@@ -5,6 +5,7 @@
 import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
+import * as badgeEngine from "../badgeEngine.js";
 import * as audioEngine from "../audioEngine.js";
 import * as sons from "../sons.js";
 import * as router from "../router.js";
@@ -266,7 +267,7 @@ function renderCoquille(options = {}) {
     <nav class="nav-basse" aria-label="Navigation principale">
       <button type="button" class="nav-item" data-role="nav-accueil">${icons.iconeMaison(false)}<span>Accueil</span></button>
       <button type="button" class="nav-item actif" aria-current="page">${icons.iconeLivre(true)}<span>Mes Mots</span></button>
-      <button type="button" class="nav-item" data-role="nav-album">${icons.iconeAlbum(false)}<span>Mon Album</span></button>
+      <button type="button" class="nav-item nav-album" data-role="nav-album">${icons.iconeAlbum(false)}<span>Mon Album</span>${badgeEngine.aBadgeEnAttente() ? '<i class="pastille-nav"></i>' : ""}</button>
     </nav>
   `;
 

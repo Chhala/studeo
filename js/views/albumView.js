@@ -3,6 +3,7 @@
 import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
+import * as badgeEngine from "../badgeEngine.js";
 import * as themeEngine from "../themeEngine.js";
 import * as router from "../router.js";
 import * as icons from "../icons.js";
@@ -57,8 +58,82 @@ function tuileHTML(item, type) {
   `;
 }
 
+// ---------- Onglet « Badges » (décision §5.53) ----------
+
+function tuileBadgeHTML(badge) {
+  const classe = badge.etat === "avenir" ? "verrouille" : badge.etat === "pret" ? "pret" : "";
+  const pastille = badge.etat === "pret" ? `<div class="pastille-gain">${icons.iconeEtoile("#FFFFFF")}</div>` : "";
+  const voile = badge.etat === "avenir" ? `<div class="voile-cadenas">${icons.iconeCadenas()}</div>` : "";
+  return `
+    <div class="tuile-collectible ${classe}" data-id="${badge.id}">
+      <div class="tuile-visuel tuile-badge ${classe}">
+        <img src="${badge.image}" alt=""
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="repli" style="display:none;align-items:center;justify-content:center;width:100%;height:100%;">
+          ${icons.iconeImagePlaceholder()}
+        </div>
+        ${pastille}${voile}
+      </div>
+      <div class="etiquette"><div class="tuile-nom">${badge.titre}</div></div>
+    </div>
+  `;
+}
+
+// Pastille rouge sur « Mon Album » tant qu'un badge attend (elle peut apparaître ici même, par exemple
+// en débloquant la dernière mascotte, ou disparaître une fois le dernier badge épinglé).
+function majPastilleNav() {
+  const bouton = document.querySelector(".nav-album");
+  if (!bouton) return;
+  const point = bouton.querySelector(".pastille-nav");
+  const attente = badgeEngine.aBadgeEnAttente();
+  if (attente && !point) bouton.insertAdjacentHTML("beforeend", '<i class="pastille-nav"></i>');
+  else if (!attente && point) point.remove();
+}
+
+function renderBadges(conteneur) {
+  vieMascottes.arreter();
+  const catalogue = badgeEngine.getCatalogue();
+  conteneur.innerHTML = catalogue.map(tuileBadgeHTML).join("");
+
+  document.getElementById("chiffre-etoiles").textContent = dataStore.getTotalEtoiles();
+
+  // Une seule ligne, sans montant : le gain (1 à 3 ⭐) est révélé à l'épinglage ; elle disparaît
+  // quand tous les badges sont épinglés.
+  const note = document.getElementById("note-prix");
+  note.hidden = catalogue.every((b) => b.etat === "obtenu");
+  note.innerHTML = `<span>Des</span>${icons.iconeEtoile()}<span>pour chaque badge épinglé</span>`;
+
+  conteneur.querySelectorAll(".tuile-collectible").forEach((tuile) => {
+    tuile.addEventListener("click", () => {
+      const badge = catalogue.find((b) => b.id === tuile.dataset.id);
+      if (!badge) return;
+
+      if (badge.etat === "pret") {
+        // Épingler : un tap, sans confirmation (c'est gratuit). Les étoiles tombent dans le compteur
+        // avec l'effet de gain de l'accueil, sans texte (décision §5.53).
+        const resultat = badgeEngine.epingler(badge.id);
+        if (!resultat.ok) return;
+        renderGrille();
+        if (resultat.gain > 0) {
+          appShell.animerGainEtoiles(document.getElementById("chip-etoiles"), resultat.ancienTotal, resultat.nouveauTotal, resultat.gain);
+        }
+        return;
+      }
+
+      // Badge à venir (ou déjà obtenu) : sa condition en clair ; l'avancement, quand il en a un,
+      // n'est visible que dans cette fenêtre — jamais sur la tuile.
+      overlays.openBadgeInfo(badge, badge.etat === "avenir" ? badgeEngine.getProgres(badge.id) : null);
+    });
+  });
+}
+
 function renderGrille() {
   const conteneur = document.getElementById("conteneur-grille");
+  majPastilleNav();
+  if (ongletActif === "badges") {
+    renderBadges(conteneur);
+    return;
+  }
   const catalogue = ongletActif === "personnages" ? characterEngine.getCatalogue() : themeEngine.getCatalogue();
   const type = ongletActif === "personnages" ? "character" : "background";
 
@@ -148,12 +223,13 @@ function renderCoquille() {
   appShell.getView().innerHTML = `
     <div class="entete">
       <div class="entete-titre font-display">Mon Album</div>
-      <div class="chip-etoiles">${icons.iconeEtoile()}<span id="chiffre-etoiles">${etoiles}</span></div>
+      <div class="chip-etoiles" id="chip-etoiles"><span class="etoile-chip">${icons.iconeEtoile()}</span><span class="chiffre-chip" id="chiffre-etoiles">${etoiles}</span></div>
     </div>
 
     <div class="segmented">
       <button type="button" data-onglet="personnages" aria-current="${ongletActif === "personnages"}">Mascottes</button>
       <button type="button" data-onglet="fonds" aria-current="${ongletActif === "fonds"}">Fonds d'écran</button>
+      <button type="button" data-onglet="badges" aria-current="${ongletActif === "badges"}">Badges</button>
     </div>
 
     <div class="note-prix" id="note-prix" hidden></div>
@@ -163,7 +239,7 @@ function renderCoquille() {
     <nav class="nav-basse" aria-label="Navigation principale">
       <button type="button" class="nav-item" data-role="nav-accueil">${icons.iconeMaison(false)}<span>Accueil</span></button>
       <button type="button" class="nav-item" data-role="nav-mots">${icons.iconeLivre(false)}<span>Mes Mots</span></button>
-      <button type="button" class="nav-item actif" aria-current="page">${icons.iconeAlbum(true)}<span>Mon Album</span></button>
+      <button type="button" class="nav-item actif nav-album" aria-current="page">${icons.iconeAlbum(true)}<span>Mon Album</span>${badgeEngine.aBadgeEnAttente() ? '<i class="pastille-nav"></i>' : ""}</button>
     </nav>
   `;
 

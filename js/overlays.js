@@ -30,6 +30,30 @@ export function openConfirmation({ titre, message, texteConfirmer, gravite = "fo
   });
 }
 
+// ---------- Fenêtre d'un badge (décision §5.53) ----------
+// Le visuel est montré EN COULEURS, comme s'il était débloqué (jamais estompé), avec le titre et la
+// condition. `progres` ({ texte, ratio }) n'existe que pour les badges qui montrent un avancement
+// (Bunny, Deer-Deer, Catty, Chicken) : barre + texte, dans cette fenêtre uniquement.
+export function openBadgeInfo(badge, progres = null) {
+  const barre = progres
+    ? `<div class="badge-barre"><i style="width:${Math.round(Math.min(1, progres.ratio) * 100)}%"></i></div>
+       <div class="badge-progres-texte">${progres.texte}</div>`
+    : "";
+  const html = `
+    <div class="boite-dialogue" role="dialog" aria-labelledby="badge-titre">
+      <div class="tuile-dialogue"><img src="${badge.image}" alt="" onerror="this.style.display='none'"></div>
+      <div class="boite-dialogue-titre" id="badge-titre">${badge.titre}</div>
+      <div class="boite-dialogue-message">${badge.condition}</div>
+      ${barre}
+      <div class="boite-dialogue-actions" style="margin-top:6px;">
+        <button type="button" class="bouton-dialogue confirmer" data-role="fermer">Compris</button>
+      </div>
+    </div>
+  `;
+  const voile = appShell.montrerVoile(html, { position: "centre" });
+  voile.querySelector('[data-role="fermer"]').addEventListener("click", () => appShell.fermerVoile(voile));
+}
+
 // ---------- Aide "comment gagner des étoiles" + accès parent caché ----------
 // Racourci volontairement discret : 5 taps rapides sur la fenêtre d'aide ouvrent un code
 // parent (voir décision §5.24) menant à un réglage manuel du solde d'étoiles. Un enfant qui

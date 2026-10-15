@@ -5,7 +5,7 @@
 // Duplication assumée : les identifiants ci-dessous reprennent characters.config.js et
 // backgrounds.config.js. En modifier un, penser à répercuter ici et à incrémenter CACHE_NAME.
 
-const CACHE_NAME = "studeo-cache-v78";
+const CACHE_NAME = "studeo-cache-v80";
 
 const CHARACTER_ANIMATIONS_FRAMES = {
   tanuki: { idle: [12], walk: [12, 12], jump: [8], hurt: [6, 10] },
@@ -22,6 +22,9 @@ const CHARACTER_ANIMATIONS_FRAMES = {
   slime: { idle: [12], walk: [10], jump: [10], hurt: [6] }
 };
 const BACKGROUND_IDS = Array.from({ length: 20 }, (_, i) => `bg${String(i + 2).padStart(2, "0")}`);
+// Visuels des badges : un par mascotte (voir badges.config.js). Ils ne sont pas encore déployés (droits
+// d'auteur à régler, CLAUDE.md §5.53) : le précache résilient ignore simplement leur absence.
+const BADGE_IDS = Object.keys(CHARACTER_ANIMATIONS_FRAMES);
 
 const FICHIERS_COQUILLE = [
   "./",
@@ -32,6 +35,8 @@ const FICHIERS_COQUILLE = [
   "./js/appShell.js",
   "./js/audioEngine.js",
   "./js/backgrounds.config.js",
+  "./js/badgeEngine.js",
+  "./js/badges.config.js",
   "./js/characterEngine.js",
   "./js/characters.config.js",
   "./js/dataStore.js",
@@ -54,7 +59,9 @@ const FICHIERS_COQUILLE = [
   "./js/views/sessionView.js",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  "./assets/icons/icon-maskable-512.png"
+  "./assets/icons/icon-maskable-512.png",
+  "./assets/fonts/baloo2-latin.woff2",
+  "./assets/fonts/nunito-latin.woff2"
 ];
 
 function cheminsSprites() {
@@ -73,6 +80,10 @@ function cheminsSprites() {
 
 function cheminsFonds() {
   return BACKGROUND_IDS.map((id) => `./assets/backgrounds/${id}.webp`);
+}
+
+function cheminsBadges() {
+  return BADGE_IDS.map((id) => `./assets/badges/${id}.png`);
 }
 
 // Met en cache chaque ressource indépendamment : une image pas encore fournie (404) ne fait
@@ -103,6 +114,7 @@ self.addEventListener("install", (evenement) => {
       await precacherResilient(cache, FICHIERS_COQUILLE, { forcerReseau: true });
       await precacherResilient(cache, cheminsSprites());
       await precacherResilient(cache, cheminsFonds());
+      await precacherResilient(cache, cheminsBadges());
       self.skipWaiting();
     })()
   );

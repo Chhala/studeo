@@ -58,9 +58,9 @@ export const CHARACTERS_CONFIG = [
     }
   },
   {
-    id: "chicken", nom: "Chicken", coutEtoiles: 7,
+    id: "ducky", nom: "Ducky", coutEtoiles: 7,
     animations: {
-      idle: [{ frames: 11 }, { frames: 12 }],
+      idle: [{ frames: 12 }, { frames: 12 }],
       walk: [{ frames: 12 }],
       jump: [{ frames: 8 }], // variante avec le balancement de bras (le saut simple a été supprimé)
       hurt: [{ frames: 6 }, { frames: 10 }]
@@ -76,9 +76,9 @@ export const CHARACTERS_CONFIG = [
     }
   },
   {
-    id: "ducky", nom: "Ducky", coutEtoiles: 7,
+    id: "chicken", nom: "Chicken", coutEtoiles: 7,
     animations: {
-      idle: [{ frames: 12 }, { frames: 12 }],
+      idle: [{ frames: 11 }, { frames: 12 }],
       walk: [{ frames: 12 }],
       jump: [{ frames: 8 }], // variante avec le balancement de bras (le saut simple a été supprimé)
       hurt: [{ frames: 6 }, { frames: 10 }]
