@@ -5,7 +5,7 @@
 import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
-import * as badgeEngine from "../badgeEngine.js";
+import * as navigation from "../navigation.js";
 import * as audioEngine from "../audioEngine.js";
 import * as sons from "../sons.js";
 import * as router from "../router.js";
@@ -264,11 +264,7 @@ function renderCoquille(options = {}) {
 
     <div class="liste-mots" id="conteneur-liste"></div>
 
-    <nav class="nav-basse" aria-label="Navigation principale">
-      <button type="button" class="nav-item" data-role="nav-accueil">${icons.iconeMaison(false)}<span>Accueil</span></button>
-      <button type="button" class="nav-item actif" aria-current="page">${icons.iconeLivre(true)}<span>Mes Mots</span></button>
-      <button type="button" class="nav-item nav-album" data-role="nav-album">${icons.iconeAlbum(false)}<span>Mon Album</span>${badgeEngine.aBadgeEnAttente() ? '<i class="pastille-nav"></i>' : ""}</button>
-    </nav>
+    ${navigation.html("mots")}
   `;
 
   const vue = appShell.getView();
@@ -352,8 +348,7 @@ function renderCoquille(options = {}) {
     }, verifierDoublon(null));
   });
 
-  vue.querySelector('[data-role="nav-accueil"]').addEventListener("click", () => router.naviguer("accueil"));
-  vue.querySelector('[data-role="nav-album"]').addEventListener("click", () => router.naviguer("album"));
+  navigation.brancher(vue);
 
   const conteneurListe = vue.querySelector("#conteneur-liste");
   conteneurListe.addEventListener("scroll", () => characterEngine.signalerScroll(), { passive: true });

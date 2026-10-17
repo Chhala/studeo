@@ -82,3 +82,51 @@ export function phraseIncorrecte(bonneReponseAffichee) {
     `Pas cette fois — la réponse était "${bonneReponseAffichee}".`
   ]);
 }
+
+// ---------- Mon Sac (le cartable, décision §5.55) ----------
+// Toutes ces phrases tiennent en 3 lignes au plus (≈ 70 caractères) : la carte de la mascotte garde ainsi
+// sa hauteur (l'avatar de 72 px est plus haut que 3 lignes de texte). La mascotte parle au masculin.
+
+// Phrase habituelle de la page, selon le nombre d'objectifs.
+export function phraseSacHabituelle(nbObjectifs) {
+  if (nbObjectifs === 0) return "Tu n'as pas d'objectif. Demande à ton parent d'en créer un avec toi.";
+  return nbObjectifs > 1 ? "Verse des étoiles pour remplir tes objectifs." : "Verse des étoiles pour remplir ton objectif.";
+}
+
+// Un toucher sur une ligne : l'avancement s'il y a des étoiles (pas de chiffre quand l'objectif est
+// plein : on demande un parent), sinon quoi faire.
+export function phraseSacLigne(objectif) {
+  if (objectif.versees >= objectif.cout) return "Objectif rempli ! Appelle un parent pour le valider ensemble.";
+  if (objectif.versees > 0) {
+    return `Pour cet objectif, tu as ${objectif.versees} étoile${objectif.versees > 1 ? "s" : ""}, et il t'en faut ${objectif.cout}.`;
+  }
+  return "Glisse la ligne vers la gauche pour verser des étoiles.";
+}
+
+// Demande du code parent (pour valider comme pour créer) : une phrase différente de la précédente.
+const PHRASES_CODE_SAC = [
+  "Il te faut ton code secret, j'espère que tu t'en souviens !",
+  "C'est l'heure du code secret : ouvre grand tes souvenirs !",
+  "Un petit code secret, s'il te plaît… Je ne regarde pas, promis !"
+];
+let dernierIndexCode = -1;
+export function phraseSacCode() {
+  let index;
+  do { index = Math.floor(Math.random() * PHRASES_CODE_SAC.length); } while (index === dernierIndexCode);
+  dernierIndexCode = index;
+  return PHRASES_CODE_SAC[index];
+}
+
+export const PHRASES_SAC = {
+  codeFaux: "Aïe, ce n'est pas le bon code. On réessaie ?",
+  soldeNul: "Tu n'as pas une seule étoile en poche !",
+  limite: "Quatre objectifs, c'est déjà un cartable bien rempli !",
+  remplir: "Combien d'étoiles glisses-tu dans le cartable ?",
+  confirmerRetrait: "Tu veux vraiment vider ton cartable ? Tu reprends tes étoiles, promis !",
+  creer: "Crée un nouvel objectif.",
+  objectifPlein: "Tu as rempli ton cartable : appelle ton parent pour le valider !",
+  valide: "C'est validé. Maintenant, tiens ta parole !",
+  ajoute: "Nouvel objectif dans le cartable !",
+  vide: "C'est vidé ! Tes étoiles te sont rendues, comme promis.",
+  retire: "Objectif retiré du cartable."
+};

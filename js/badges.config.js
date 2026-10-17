@@ -9,6 +9,13 @@
 //
 // Les conditions sont calculées par badgeEngine.js ; ici, seulement l'affichage.
 
+// Interrupteur général de la fonction « Badges » (décision de l'utilisateur, 2026-10-16) : à `false`,
+// tout est éteint — pas d'onglet « Badges » dans Mon Album, pas de pastille sur « Mon Album », aucun
+// badge évalué, aucun compteur alimenté (série de jours, Défis réussis, questionnaires). Tout le code
+// reste en place : repasser à `true` (et incrémenter CACHE_NAME) suffit à le rallumer. Les compteurs
+// repartent alors de zéro (rien n'a été enregistré pendant l'extinction).
+export const BADGES_ACTIFS = false;
+
 export const BADGES_CONFIG = [
   { id: "tanuki",    titre: "Premiers pas",          condition: "Installer Studeo.",                                 gain: 0 },
   { id: "ducky",     titre: "Toujours à flot !",     condition: "Réussir une Révision sans erreur, sans rattrapage.", gain: 1 },
@@ -18,7 +25,7 @@ export const BADGES_CONFIG = [
   { id: "piggy",     titre: "Dans la poche !",       condition: "Maîtriser 75 mots.",                                gain: 2 },
   { id: "catty",     titre: "Suivre le fil",         condition: "Donner 500 bonnes réponses.",                       gain: 2, progres: { type: "bonnesReponses", cible: 500 } },
   { id: "bunny",     titre: "Ça pousse !",           condition: "Étudier 7 jours de suite.",                         gain: 1, progres: { type: "serie", cible: 7 } },
-  { id: "deer-deer", titre: "Calendrier de l'Avent", condition: "Étudier 24 jours de suite.",                        gain: 3, progres: { type: "serie", cible: 24 } },
+  { id: "deer-deer", titre: "Allez de l'Avent",     condition: "Étudier 24 jours de suite.",                        gain: 3, progres: { type: "serie", cible: 24 } },
   { id: "bones",     titre: "Ronger un os",          condition: "Réussir 15 questionnaires de Révision.",            gain: 1 },
   { id: "zombie",    titre: "Tous à table !",        condition: "Débloquer toutes les mascottes.",                   gain: 2 },
   { id: "slime",     titre: "Van Gogh",              condition: "Débloquer tous les fonds d'écran.",                 gain: 2 }

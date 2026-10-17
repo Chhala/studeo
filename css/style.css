@@ -1223,3 +1223,149 @@ button:focus-visible, input:focus-visible {
   align-items: center;
   justify-content: center;
 }
+
+/* ==========================================================================
+   Mon Sac — le cartable (décision §5.55)
+   ========================================================================== */
+
+.entete-droite { display: flex; align-items: center; gap: 8px; }
+
+/* Le compteur a ici une largeur fixe (3 chiffres) : le + à sa gauche ne bouge pas quand le solde change de
+   nombre de chiffres. */
+.entete-sac .chip-etoiles { min-width: 70px; box-sizing: border-box; justify-content: center; }
+
+/* La carte de la mascotte est au même endroit que sur « Mes Mots » (juste sous l'en-tête). */
+.zone-mascotte { padding: 8px 24px 0 24px; flex-shrink: 0; }
+.zone-mascotte .carte-mascotte { width: 100%; box-sizing: border-box; }
+
+.zone-cartable {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Le gros carré arrondi : plus grand qu'une tuile de mascotte, sans cadre ni lueur — seules les barres de
+   progression disent où on en est. */
+.carte-cartable {
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(194, 52, 68, 0.18);
+}
+.carte-cartable img { width: 72%; height: 72%; object-fit: contain; }
+.carte-cartable.rebond { animation: rebond-sac 0.55s ease-out; }
+.carte-cartable.secousse { animation: secousse-sac 0.45s ease-in-out; }
+@keyframes rebond-sac {
+  0% { transform: scale(1) rotate(0); }
+  30% { transform: scale(1.1) rotate(-3deg); }
+  60% { transform: scale(0.97) rotate(2deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes secousse-sac {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px) rotate(-2deg); }
+  50% { transform: translateX(5px) rotate(2deg); }
+  80% { transform: translateX(-3px); }
+}
+
+/* Lignes d'objectifs : les lignes glissantes de « Mes Mots » (.ligne-mot-wrapper), avec une barre et une étoile. */
+.liste-objectifs { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.liste-objectifs .ligne-mot { user-select: none; -webkit-user-select: none; cursor: grab; }
+.obj-texte { flex: 1; min-width: 0; }
+.obj-libelle {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 7px;
+}
+.obj-barre { height: 10px; border-radius: var(--radius-pill); background: #F2E1DD; overflow: hidden; }
+.obj-barre > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.6s cubic-bezier(0.3, 0.8, 0.3, 1), background 0.3s;
+}
+.objectif.pret .obj-barre > i { background: var(--gold); }
+.obj-compte { display: flex; align-items: center; flex-shrink: 0; }
+.ligne-mot-actions .verser { background: var(--accent); }
+.ligne-mot-actions .valider { background: var(--gold); }
+.ligne-mot-actions .vider { background: var(--danger); }
+
+/* Étoiles qui volent entre le compteur et une ligne (posées dans la coquille, au-dessus des voiles). */
+.etoile-vol { position: absolute; left: 0; top: 0; z-index: 30; width: 22px; height: 22px; pointer-events: none; will-change: transform; }
+
+/* Compteur : petit rebond quand des étoiles partent dans le cartable. */
+.chip-etoiles.debit { animation: chip-pop 0.5s ease-out; }
+.chip-etoiles.debit .chiffre-chip { animation: chiffre-pop 0.5s ease-out; }
+
+/* Fenêtre « Remplir d'étoiles » */
+.sous-titre-feuille { font-weight: 700; font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px; }
+.stepper { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 6px 0 20px; }
+.stepper button {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: #FFFFFF;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(194, 52, 68, 0.28);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.stepper button:disabled { background: #E8CFC9; box-shadow: none; cursor: default; }
+.stepper .valeur { min-width: 92px; text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 42px; color: var(--text-dark); }
+
+/* Fenêtre « Nouvel objectif » */
+.suggestion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.suggestion svg { width: 15px; height: 15px; }
+.indication { display: flex; align-items: center; gap: 7px; margin: -4px 0 14px; min-height: 18px; font-weight: 700; font-size: 12.5px; color: var(--text-muted); }
+.indication svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Code parent : le champ secoue quand le code est faux. */
+.champ-code { text-align: left; margin-bottom: 18px; }
+.secoue { animation: secousse-champ 0.4s; }
+@keyframes secousse-champ {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carte-cartable.rebond, .carte-cartable.secousse, .secoue, .chip-etoiles.debit, .chip-etoiles.debit .chiffre-chip { animation: none; }
+  .obj-barre > i { transition: none; }
+}

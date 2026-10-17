@@ -10,7 +10,7 @@
 //  - fondées sur UNE SESSION menée à son terme (Révision sans erreur, Défi de 20 mots parfait, jour
 //    d'étude, Défi réussi, questionnaire réussi) : apresSession(), appelée par quizEngine.
 
-import { BADGES_CONFIG, cheminImageBadge } from "./badges.config.js";
+import { BADGES_ACTIFS, BADGES_CONFIG, cheminImageBadge } from "./badges.config.js";
 import { CHARACTERS_CONFIG } from "./characters.config.js";
 import { BACKGROUNDS_CONFIG, BACKGROUND_NONE_ID } from "./backgrounds.config.js";
 import * as dataStore from "./dataStore.js";
@@ -67,7 +67,14 @@ function obtenir(id) {
   return nouveau;
 }
 
+// La fonction est-elle allumée ? (interrupteur BADGES_ACTIFS de badges.config.js). Éteinte, ce module
+// ne fait plus rien : les vues masquent l'onglet et la pastille, aucun compteur n'est alimenté.
+export function badgesActifs() {
+  return BADGES_ACTIFS;
+}
+
 export function evaluerEtat() {
+  if (!BADGES_ACTIFS) return;
   for (const [id, condition] of Object.entries(CONDITIONS_ETAT)) {
     if (!dataStore.badgeEstObtenu(id) && condition()) obtenir(id);
   }
@@ -80,6 +87,7 @@ export function evaluerEtat() {
 //   lotValide (Révision : tous les mots du lot sont validés aujourd'hui), dateAjout,
 //   defiReussi (Défi : seuil de l'étoile atteint).
 export function apresSession(resume) {
+  if (!BADGES_ACTIFS) return;
   const total = resume.reponses.length;
   const bonnes = resume.reponses.filter((r) => r.correct).length;
   const toutesJustes = total > 0 && bonnes === total;
@@ -116,6 +124,7 @@ export function getCatalogue() {
 
 // Vrai tant qu'un badge attend d'être épinglé : affiche la pastille sur « Mon Album ».
 export function aBadgeEnAttente() {
+  if (!BADGES_ACTIFS) return false;
   evaluerEtat();
   const etat = dataStore.getBadgesEtat();
   return BADGES_CONFIG.some((b) => etatDuBadge(b.id, etat) === "pret");
@@ -125,7 +134,7 @@ export function aBadgeEnAttente() {
 export function epingler(id) {
   const badge = definition(id);
   const ancienTotal = dataStore.getTotalEtoiles();
-  if (!badge || !dataStore.epinglerBadge(id, badge.gain)) return { ok: false, gain: 0, ancienTotal, nouveauTotal: ancienTotal };
+  if (!BADGES_ACTIFS || !badge || !dataStore.epinglerBadge(id, badge.gain)) return { ok: false, gain: 0, ancienTotal, nouveauTotal: ancienTotal };
   return { ok: true, gain: badge.gain, ancienTotal, nouveauTotal: dataStore.getTotalEtoiles() };
 }
 

@@ -5,7 +5,7 @@
 // Duplication assumée : les identifiants ci-dessous reprennent characters.config.js et
 // backgrounds.config.js. En modifier un, penser à répercuter ici et à incrémenter CACHE_NAME.
 
-const CACHE_NAME = "studeo-cache-v80";
+const CACHE_NAME = "studeo-cache-v82";
 
 const CHARACTER_ANIMATIONS_FRAMES = {
   tanuki: { idle: [12], walk: [12, 12], jump: [8], hurt: [6, 10] },
@@ -37,16 +37,20 @@ const FICHIERS_COQUILLE = [
   "./js/backgrounds.config.js",
   "./js/badgeEngine.js",
   "./js/badges.config.js",
+  "./js/cartableEngine.js",
   "./js/characterEngine.js",
   "./js/characters.config.js",
   "./js/dataStore.js",
   "./js/icons.js",
   "./js/installPrompt.js",
+  "./js/navigation.js",
   "./js/mascotteTexte.js",
   "./js/overlays.js",
   "./js/quizEngine.js",
   "./js/rewardEngine.js",
   "./js/router.js",
+  "./js/sacEffets.js",
+  "./js/sacOverlays.js",
   "./js/sons.js",
   "./js/spriteAnimator.js",
   "./js/themeEngine.js",
@@ -56,7 +60,9 @@ const FICHIERS_COQUILLE = [
   "./js/views/accueilView.js",
   "./js/views/mesMotsView.js",
   "./js/views/albumView.js",
+  "./js/views/sacView.js",
   "./js/views/sessionView.js",
+  "./assets/sac-a-etoiles.png",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/icon-maskable-512.png",

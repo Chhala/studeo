@@ -78,3 +78,41 @@ export const iconeEtoileContour = () =>
 
 export const iconeCroix = (couleur = "var(--text-muted)") =>
   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="${couleur}" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+
+// ---------- Cartable / « Mon Sac » (décision §5.55) ----------
+
+// Picto du menu « Mon Sac » : sac à dos à poches latérales (plein quand le menu est actif, contour sinon).
+export const iconeSac = (actif) => {
+  const c = actif ? "var(--accent)" : "var(--icon-inactive)";
+  const forme = "M6.5 10C6.5 7.8 8.3 6 10.5 6H13.5C15.7 6 17.5 7.8 17.5 10V19C17.5 19.6 17.1 20 16.5 20H7.5C6.9 20 6.5 19.6 6.5 19V10Z";
+  const trait = (d) => `<path d="${d}" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const corps = actif
+    ? `<path d="${forme}" fill="${c}"/>`
+    : `<path d="${forme}" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none">${trait("M10 5C10 3.9 10.9 3 12 3C13.1 3 14 3.9 14 5V6")}${corps}${trait("M6.5 13.5H5C4.4 13.5 4 13.9 4 14.5V17C4 17.6 4.4 18 5 18H6.5")}${trait("M17.5 13.5H19C19.6 13.5 20 13.9 20 14.5V17C20 17.6 19.6 18 19 18H17.5")}<path d="M9.5 10.5H14.5" stroke="${actif ? "#FFFFFF" : c}" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+};
+
+const ETOILE_BLANCHE_POUR_ACTION = "M12 2L14.7 8.5L21.8 9.1L16.4 13.7L18 20.7L12 17L6 20.7L7.6 13.7L2.2 9.1L9.3 8.5L12 2Z";
+const actionBlanche = (interieur, taille) =>
+  `<svg width="${taille}" height="${taille}" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${interieur}</svg>`;
+
+// Boutons de la ligne glissée : remplir (une étoile qui tombe dans un bac), retirer (flèche de retour vers
+// l'étoile), valider (coche).
+export const iconeRemplir = () =>
+  actionBlanche(`<g transform="translate(5.2 0.4) scale(0.58)"><path d="${ETOILE_BLANCHE_POUR_ACTION}" fill="#FFFFFF" stroke="none"/></g><path d="M4.5 14.5V19.3C4.5 20.2 5.2 20.9 6.1 20.9H17.9C18.8 20.9 19.5 20.2 19.5 19.3V14.5"/>`, 28);
+export const iconeRetirer = () =>
+  actionBlanche(`<path d="M20 12A8 8 0 1 1 17.7 6.3"/><path d="M18 2.8V7.2H13.6"/><g transform="translate(7.2 7.5) scale(0.4)"><path d="${ETOILE_BLANCHE_POUR_ACTION}" fill="#FFFFFF" stroke="none"/></g>`, 28);
+export const iconeValider = () =>
+  actionBlanche(`<path d="M4 12.5L9.5 18L20 6.5"/>`, 28);
+
+// Grande étoile dorée au bout de chaque ligne d'objectif.
+export const iconeEtoileLigne = () =>
+  `<svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold)"><path d="${ETOILE_BLANCHE_POUR_ACTION}"/></svg>`;
+
+// Bouton « Recréer » du formulaire d'objectif.
+export const iconeRecreer = () =>
+  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12A8 8 0 1 1 17.7 6.3"/><path d="M18 2.5V7H13.5"/></svg>`;
+
+// Indication de durée du formulaire d'objectif.
+export const iconeHorloge = () =>
+  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7V12L15.5 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;

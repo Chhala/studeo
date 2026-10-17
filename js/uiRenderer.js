@@ -8,6 +8,7 @@ import * as accueilView from "./views/accueilView.js";
 import * as mesMotsView from "./views/mesMotsView.js";
 import * as albumView from "./views/albumView.js";
 import * as sessionView from "./views/sessionView.js";
+import * as sacView from "./views/sacView.js";
 
 export function afficherRoute({ route, sousRoute, params }) {
   overlays.fermerToutesLesVoiles();
@@ -15,10 +16,14 @@ export function afficherRoute({ route, sousRoute, params }) {
   // boutique) s'arrêtent avant d'en afficher une autre.
   characterEngine.arreterVieAleatoire();
   vieMascottes.arreter();
+  sacView.arreter();   // aucun minuteur de « Mon Sac » ne doit parler une fois la page changée
 
   switch (route) {
     case "mots":
       mesMotsView.render(params.get("filtre"));
+      break;
+    case "sac":
+      sacView.render();
       break;
     case "album":
       albumView.render();

@@ -228,6 +228,28 @@ export function scoreParfait() {
   note(523.25, { t: 0.12, du: 0.55, v: 0.12 });
 }
 
+// ---------- Sons du cartable / « Mon Sac » (décision §5.55, validés à l'oreille le 2026-10-17) ----------
+// Remplir : 1 à 3 petits « plop » qui descendent (un par étoile, 3 au plus).
+export function remplir(nbEtoiles = 1) {
+  if (!pret()) return;
+  couvrirVoix(380);
+  [784, 659, 523].slice(0, Math.min(Math.max(nbEtoiles, 1), 3)).forEach((f, k) => note(f, { t: k * 0.1, du: 0.12 }));
+}
+
+// Retirer : un pip qui remonte, doux (les étoiles reviennent, ce n'est pas une punition).
+export function retirer() {
+  if (!pret()) return;
+  couvrirVoix(420);
+  glisse(420, 780, { gl: 0.14, du: 0.22, v: 0.2 });
+  note(1046.5, { t: 0.15, du: 0.18, v: 0.14 });
+}
+
+// Pas du stepper « Remplir d'étoiles » : un demi-ton de plus à chaque pas (12 au plus, soit une octave).
+export function pasStepper(rang = 0) {
+  if (!pret()) return;
+  note(392 * Math.pow(2, Math.min(Math.max(rang, 0), 12) / 12), { du: 0.07, v: 0.16 });
+}
+
 // Confirmation quand l'enfant (ou le parent) réactive les sons dans le menu.
 export function apercu() {
   if (!pret()) return;

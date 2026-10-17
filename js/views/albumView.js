@@ -5,7 +5,7 @@ import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
 import * as badgeEngine from "../badgeEngine.js";
 import * as themeEngine from "../themeEngine.js";
-import * as router from "../router.js";
+import * as navigation from "../navigation.js";
 import * as icons from "../icons.js";
 import * as overlays from "../overlays.js";
 import * as vieMascottes from "../vieMascottes.js";
@@ -229,18 +229,14 @@ function renderCoquille() {
     <div class="segmented">
       <button type="button" data-onglet="personnages" aria-current="${ongletActif === "personnages"}">Mascottes</button>
       <button type="button" data-onglet="fonds" aria-current="${ongletActif === "fonds"}">Fonds d'écran</button>
-      <button type="button" data-onglet="badges" aria-current="${ongletActif === "badges"}">Badges</button>
+      ${badgeEngine.badgesActifs() ? `<button type="button" data-onglet="badges" aria-current="${ongletActif === "badges"}">Badges</button>` : ""}
     </div>
 
     <div class="note-prix" id="note-prix" hidden></div>
 
     <div class="grille-album" id="conteneur-grille"></div>
 
-    <nav class="nav-basse" aria-label="Navigation principale">
-      <button type="button" class="nav-item" data-role="nav-accueil">${icons.iconeMaison(false)}<span>Accueil</span></button>
-      <button type="button" class="nav-item" data-role="nav-mots">${icons.iconeLivre(false)}<span>Mes Mots</span></button>
-      <button type="button" class="nav-item actif nav-album" aria-current="page">${icons.iconeAlbum(true)}<span>Mon Album</span>${badgeEngine.aBadgeEnAttente() ? '<i class="pastille-nav"></i>' : ""}</button>
-    </nav>
+    ${navigation.html("album")}
   `;
 
   const vue = appShell.getView();
@@ -252,8 +248,7 @@ function renderCoquille() {
     });
   });
 
-  vue.querySelector('[data-role="nav-accueil"]').addEventListener("click", () => router.naviguer("accueil"));
-  vue.querySelector('[data-role="nav-mots"]').addEventListener("click", () => router.naviguer("mots"));
+  navigation.brancher(vue);
 
   renderGrille();
 }

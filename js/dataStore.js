@@ -87,8 +87,56 @@ function etatParDefaut() {
     // Badges (décision §5.53) : "obtenus" = condition remplie, "epingles" = étoiles reçues. Un badge
     // obtenu n'est jamais retiré. Tanuki est offert d'office (badge cosmétique, 0 ⭐).
     badges: badgesParDefaut(),
-    suiviBadges: suiviBadgesParDefaut()
+    suiviBadges: suiviBadgesParDefaut(),
+    // Cartable / « Mon Sac » : objectifs fixés par le parent, que l'enfant remplit avec ses étoiles
+    // (décision §5.55). Les étoiles versées SORTENT du solde et ne reviennent que si l'objectif est retiré.
+    cartable: cartableParDefaut()
   };
+}
+
+// ---------- Cartable : objectifs (décision §5.55) ----------
+// objectifs : [{ id, libelle, cout, versees }] ; dernierRetire : { libelle, cout } du dernier objectif
+// retiré OU validé (le formulaire propose de le recréer) ; prochainId : compteur d'identifiants.
+export const CARTABLE_MAX_OBJECTIFS = 4;
+export const CARTABLE_MAX_ETOILES = 150;
+export const CARTABLE_LIBELLE_MAX = 30;
+
+function cartableParDefaut() {
+  return { objectifs: [], dernierRetire: null, prochainId: 1 };
+}
+
+// Remet en forme un cartable lu dans une sauvegarde (ancienne, abîmée ou importée) : une sauvegarde sans
+// cartable donne « aucun objectif », et une valeur invalide est écartée plutôt que de casser la page.
+function normaliserCartable(brut) {
+  const cartable = cartableParDefaut();
+  if (!brut || typeof brut !== "object") return cartable;
+
+  const ids = new Set();
+  const objectifs = Array.isArray(brut.objectifs) ? brut.objectifs : [];
+  for (const o of objectifs) {
+    if (cartable.objectifs.length >= CARTABLE_MAX_OBJECTIFS || !o || typeof o !== "object") continue;
+    const id = Math.floor(Number(o.id));
+    const cout = Math.floor(Number(o.cout));
+    const versees = Math.floor(Number(o.versees));
+    const libelle = typeof o.libelle === "string" ? o.libelle.trim().slice(0, CARTABLE_LIBELLE_MAX) : "";
+    if (!libelle || !(id >= 1) || ids.has(id)) continue;
+    if (!(cout >= 1 && cout <= CARTABLE_MAX_ETOILES)) continue;
+    ids.add(id);
+    cartable.objectifs.push({ id, libelle, cout, versees: Number.isFinite(versees) ? Math.max(0, Math.min(cout, versees)) : 0 });
+  }
+
+  const dernier = brut.dernierRetire;
+  if (dernier && typeof dernier.libelle === "string" && dernier.libelle.trim()) {
+    const cout = Math.floor(Number(dernier.cout));
+    if (cout >= 1 && cout <= CARTABLE_MAX_ETOILES) {
+      cartable.dernierRetire = { libelle: dernier.libelle.trim().slice(0, CARTABLE_LIBELLE_MAX), cout };
+    }
+  }
+
+  const plusGrand = cartable.objectifs.reduce((m, o) => Math.max(m, o.id), 0);
+  const propose = Math.floor(Number(brut.prochainId));
+  cartable.prochainId = Math.max(plusGrand + 1, Number.isFinite(propose) ? propose : 1);
+  return cartable;
 }
 
 function badgesParDefaut() {
@@ -136,7 +184,9 @@ function charger() {
     const parsed = JSON.parse(brut);
     // Fusion défensive : si une future version ajoute un champ, les sauvegardes
     // anciennes ne cassent pas l'application.
-    return { ...etatParDefaut(), ...migrerIdentifiantsPersonnages(migrerOrdreFonds(parsed)) };
+    const charge = { ...etatParDefaut(), ...migrerIdentifiantsPersonnages(migrerOrdreFonds(parsed)) };
+    charge.cartable = normaliserCartable(charge.cartable);
+    return charge;
   } catch (erreur) {
     console.error("Studeo: sauvegarde illisible, réinitialisation.", erreur);
     return etatParDefaut();
@@ -610,6 +660,7 @@ export function exporterSauvegardeComplete() {
 export function importerSauvegarde(contenuJSON) {
   const donnees = JSON.parse(contenuJSON);
   etat = { ...etatParDefaut(), ...migrerIdentifiantsPersonnages(migrerOrdreFonds(donnees)) };
+  etat.cartable = normaliserCartable(etat.cartable);
   sauvegarder();
 }
 
@@ -660,6 +711,9 @@ export function remiseAZeroComplete() {
   // maîtrisé) ; « Réinitialiser étoiles & achats », elle, les conserve (décision §5.53).
   etat.badges = badgesParDefaut();
   etat.suiviBadges = suiviBadgesParDefaut();
+  // Les objectifs du cartable disparaissent SANS rendre leurs étoiles : le solde repart à 5, comme le reste
+  // (rendre les étoiles le ferait dépasser le solde de départ, décision §5.55).
+  etat.cartable = cartableParDefaut();
   sauvegarder();
 }
 
@@ -678,5 +732,65 @@ export function reinitialiserEtoilesEtAchats() {
   etat.revisionDuJour = { date: null, parLot: {}, complements: {}, aApprendre: {} };
   etat.etoilesRevisionDuJour = { date: null, lots: [] };
   etat.derniereEtoileDefi = null;
+  etat.cartable = cartableParDefaut();   // objectifs supprimés, étoiles non rendues (solde remis à 5 ci-dessus)
   sauvegarder();
+}
+
+// ---------- Cartable : opérations (décision §5.55) ----------
+// Chaque opération modifie le solde ET l'objectif puis sauvegarde UNE seule fois : une fermeture de
+// l'application au mauvais moment ne peut donc jamais perdre ou dupliquer des étoiles.
+
+export function getObjectifs() {
+  return etat.cartable.objectifs.map((o) => ({ ...o }));
+}
+
+export function getDernierObjectifRetire() {
+  return etat.cartable.dernierRetire ? { ...etat.cartable.dernierRetire } : null;
+}
+
+// Renvoie l'objectif créé, ou null (déjà 4 objectifs, libellé vide, coût hors de 1 à 150).
+export function ajouterObjectif(libelle, cout) {
+  const texte = String(libelle ?? "").trim().slice(0, CARTABLE_LIBELLE_MAX);
+  const montant = Math.floor(Number(cout));
+  if (etat.cartable.objectifs.length >= CARTABLE_MAX_OBJECTIFS) return null;
+  if (!texte || !(montant >= 1 && montant <= CARTABLE_MAX_ETOILES)) return null;
+  const objectif = { id: etat.cartable.prochainId, libelle: texte, cout: montant, versees: 0 };
+  etat.cartable.prochainId += 1;
+  etat.cartable.objectifs.push(objectif);
+  sauvegarder();
+  return { ...objectif };
+}
+
+// Verse jusqu'à `n` étoiles du solde dans l'objectif, sans jamais dépasser ni le solde ni le coût de
+// l'objectif. Renvoie le nombre d'étoiles réellement versées (0 si rien n'a pu l'être).
+export function verserDansObjectif(id, n) {
+  const objectif = etat.cartable.objectifs.find((o) => o.id === id);
+  if (!objectif) return 0;
+  const versement = Math.max(0, Math.min(Math.floor(Number(n)) || 0, etat.totalEtoiles, objectif.cout - objectif.versees));
+  if (versement === 0) return 0;
+  etat.totalEtoiles -= versement;
+  objectif.versees += versement;
+  sauvegarder();
+  return versement;
+}
+
+// Retire l'objectif : TOUTES ses étoiles retournent au solde. Renvoie { objectif, rembourse } ou null.
+export function retirerObjectif(id) {
+  const index = etat.cartable.objectifs.findIndex((o) => o.id === id);
+  if (index === -1) return null;
+  const [objectif] = etat.cartable.objectifs.splice(index, 1);
+  etat.totalEtoiles += objectif.versees;
+  etat.cartable.dernierRetire = { libelle: objectif.libelle, cout: objectif.cout };
+  sauvegarder();
+  return { objectif: { ...objectif }, rembourse: objectif.versees };
+}
+
+// Validation par le parent : seulement si l'objectif est plein. Les étoiles sont dépensées pour de bon.
+export function validerObjectif(id) {
+  const index = etat.cartable.objectifs.findIndex((o) => o.id === id);
+  if (index === -1 || etat.cartable.objectifs[index].versees < etat.cartable.objectifs[index].cout) return false;
+  const [objectif] = etat.cartable.objectifs.splice(index, 1);
+  etat.cartable.dernierRetire = { libelle: objectif.libelle, cout: objectif.cout };
+  sauvegarder();
+  return true;
 }

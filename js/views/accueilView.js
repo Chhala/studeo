@@ -4,7 +4,7 @@ import * as appShell from "../appShell.js";
 import * as dataStore from "../dataStore.js";
 import * as characterEngine from "../characterEngine.js";
 import * as quizEngine from "../quizEngine.js";
-import * as badgeEngine from "../badgeEngine.js";
+import * as navigation from "../navigation.js";
 import * as overlays from "../overlays.js";
 import * as router from "../router.js";
 import * as icons from "../icons.js";
@@ -89,17 +89,7 @@ export function render() {
       </div>
     </div>
 
-    <nav class="nav-basse" aria-label="Navigation principale">
-      <button type="button" class="nav-item actif" aria-current="page">
-        ${icons.iconeMaison(true)}<span>Accueil</span>
-      </button>
-      <button type="button" class="nav-item" data-role="nav-mots">
-        ${icons.iconeLivre(false)}<span>Mes Mots</span>
-      </button>
-      <button type="button" class="nav-item nav-album" data-role="nav-album">
-        ${icons.iconeAlbum(false)}<span>Mon Album</span>${badgeEngine.aBadgeEnAttente() ? '<i class="pastille-nav"></i>' : ""}
-      </button>
-    </nav>
+    ${navigation.html("accueil")}
   `;
 
   const vue = appShell.getView();
@@ -118,6 +108,5 @@ export function render() {
   vue.querySelector('[data-role="voir-a-revoir"]').addEventListener("click", () => router.naviguer("mots?filtre=a_revoir"));
   vue.querySelector('[data-role="revision"]').addEventListener("click", () => router.naviguer("session/revision"));
   vue.querySelector('[data-role="defi"]').addEventListener("click", () => router.naviguer("session/defi"));
-  vue.querySelector('[data-role="nav-mots"]').addEventListener("click", () => router.naviguer("mots"));
-  vue.querySelector('[data-role="nav-album"]').addEventListener("click", () => router.naviguer("album"));
+  navigation.brancher(vue);
 }

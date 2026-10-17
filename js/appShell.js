@@ -33,6 +33,10 @@ export function stabiliserClavierIOS() {
   compenser();
 }
 
+export function getShell() {
+  return refs.shell;
+}
+
 export function getView() {
   return refs.view;
 }
@@ -43,11 +47,20 @@ export function getFond() {
 
 // Affiche un voile (bottom sheet ou modale centrée) par-dessus l'écran courant.
 // contenuHTML est le HTML de la feuille/boîte elle-même (pas du voile qui l'entoure).
-export function montrerVoile(contenuHTML, { position = "bas" } = {}) {
+// `sousElement` (optionnel) : le voile ne couvre alors que ce qui est SOUS cet élément (ex. la carte de la
+// mascotte de « Mon Sac », qui reste claire pour continuer à parler pendant une fenêtre). La page est dans
+// une couche plus basse que les voiles : un élément de la page ne peut pas passer devant, il faut donc que
+// le voile commence plus bas (décision §5.55).
+export function montrerVoile(contenuHTML, { position = "bas", sousElement = null, surFermeture = null } = {}) {
   const voile = document.createElement("div");
   const classesValides = ["centre", "bas", "plein"];
   voile.className = `voile ${classesValides.includes(position) ? position : "bas"}`;
   voile.innerHTML = contenuHTML;
+  voile._surFermeture = surFermeture;   // rappelée quand le voile est fermé par fermerVoile (ex. Annuler, toucher le fond)
+  if (sousElement && sousElement.isConnected) {
+    const haut = sousElement.getBoundingClientRect().bottom - refs.shell.getBoundingClientRect().top + 10;
+    voile.style.top = `${Math.max(0, Math.round(haut))}px`;
+  }
 
   voile.addEventListener("click", (evenement) => {
     if (evenement.target === voile) fermerVoile(voile);
@@ -59,8 +72,11 @@ export function montrerVoile(contenuHTML, { position = "bas" } = {}) {
 }
 
 export function fermerVoile(voile) {
+  const surFermeture = voile && voile._surFermeture;
+  if (voile) voile._surFermeture = null;   // un voile ne rappelle qu'une fois
   if (voile && voile.parentNode) voile.parentNode.removeChild(voile);
   if (recompenserClavier) recompenserClavier();
+  if (typeof surFermeture === "function") surFermeture();
 }
 
 let minuteurToast = null;
