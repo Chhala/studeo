@@ -1358,6 +1358,9 @@ button:focus-visible, input:focus-visible {
 
 /* Code parent : le champ secoue quand le code est faux. */
 .champ-code { text-align: left; margin-bottom: 18px; }
+/* Les chiffres du code parent s'affichent en points (le champ reste de type « tel » pour le clavier numérique :
+   un type « password » déclencherait le gestionnaire de mots de passe du téléphone). Cartable + réglage du solde. */
+#champ-code-sac, #champ-code-parent { -webkit-text-security: disc; text-security: disc; }
 .secoue { animation: secousse-champ 0.4s; }
 @keyframes secousse-champ {
   0%, 100% { transform: translateX(0); }
