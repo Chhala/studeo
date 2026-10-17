@@ -201,7 +201,7 @@ export function openApercuFond(fond, onValider) {
 // ---------- Menu options (⋮) ----------
 const libelleSons = () => (dataStore.getSonsActifs() ? "Sons : activés" : "Sons : désactivés");
 
-export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire, onResetComplet, onResetEtoiles }) {
+export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire, onMettreAJourMots, onResetComplet }) {
   const html = `
     <div class="feuille" role="menu">
       <div class="poignee"></div>
@@ -224,7 +224,11 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
       </button>
 
       <div class="separateur"></div>
-      <div class="groupe-label">Partage du vocabulaire</div>
+      <div class="groupe-label">Vocabulaire</div>
+      <button type="button" class="ligne-action" data-role="maj-mots">
+        <span class="icone-cercle">${icons.iconeActualiser()}</span>
+        <span data-role="maj-mots-libelle">Mettre à jour la liste de mots</span>
+      </button>
       <button type="button" class="ligne-action" data-role="export-vocabulaire">
         <span class="icone-cercle">${icons.iconeListe()}</span>
         Exporter uniquement la liste de mots
@@ -235,10 +239,6 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
       <button type="button" class="ligne-action danger-fort" data-role="reset-complet">
         <span class="icone-cercle danger-fort">${icons.iconeAlerteTriangle()}</span>
         Remise à zéro complète
-      </button>
-      <button type="button" class="ligne-action danger-modere" data-role="reset-etoiles">
-        <span class="icone-cercle danger-modere">${icons.iconeEtoileContour()}</span>
-        Réinitialiser étoiles &amp; achats
       </button>
 
       <input type="file" id="input-import-fichier" accept="application/json" class="visually-hidden">
@@ -256,6 +256,20 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
     boutonSons.setAttribute("aria-checked", String(actifs));
     boutonSons.querySelector('[data-role="sons-libelle"]').textContent = libelleSons();
     if (actifs) sons.apercu();
+  });
+
+  // Mise à jour de la liste de mots : le menu reste ouvert le temps de la requête (libellé « en cours »), puis se
+  // ferme ; c'est la vue qui affiche le résultat (décision §5.56).
+  const boutonMaj = voile.querySelector('[data-role="maj-mots"]');
+  boutonMaj.addEventListener("click", async () => {
+    if (boutonMaj.disabled) return;
+    boutonMaj.disabled = true;
+    boutonMaj.querySelector('[data-role="maj-mots-libelle"]').textContent = "Mise à jour en cours…";
+    try {
+      await onMettreAJourMots();
+    } finally {
+      fermer();
+    }
   });
 
   voile.querySelector('[data-role="export-complet"]').addEventListener("click", () => { fermer(); onExportComplet(); });
@@ -277,16 +291,6 @@ export function openMenuOptions({ onExportComplet, onImport, onExportVocabulaire
       message: "Les statuts des mots, les étoiles et les mascottes/fonds débloqués repartent à zéro. Ta liste de mots reste intacte. Cette action est irréversible.",
       texteConfirmer: "Réinitialiser",
       onConfirmer: onResetComplet
-    });
-  });
-
-  voile.querySelector('[data-role="reset-etoiles"]').addEventListener("click", () => {
-    fermer();
-    openConfirmation({
-      titre: "Réinitialiser étoiles & achats ?",
-      message: "Le solde d'étoiles et les mascottes/fonds débloqués repartent à zéro. Les mots et leur statut ne sont pas concernés. Cette action est irréversible.",
-      texteConfirmer: "Réinitialiser",
-      onConfirmer: onResetEtoiles
     });
   });
 }

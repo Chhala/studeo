@@ -5,7 +5,7 @@
 // Duplication assumée : les identifiants ci-dessous reprennent characters.config.js et
 // backgrounds.config.js. En modifier un, penser à répercuter ici et à incrémenter CACHE_NAME.
 
-const CACHE_NAME = "studeo-cache-v82";
+const CACHE_NAME = "studeo-cache-v86";
 
 const CHARACTER_ANIMATIONS_FRAMES = {
   tanuki: { idle: [12], walk: [12, 12], jump: [8], hurt: [6, 10] },
@@ -45,6 +45,7 @@ const FICHIERS_COQUILLE = [
   "./js/installPrompt.js",
   "./js/navigation.js",
   "./js/mascotteTexte.js",
+  "./js/miseAJourMots.js",
   "./js/overlays.js",
   "./js/quizEngine.js",
   "./js/rewardEngine.js",
@@ -138,6 +139,14 @@ self.addEventListener("activate", (evenement) => {
 
 self.addEventListener("fetch", (evenement) => {
   if (evenement.request.method !== "GET") return;
+
+  // « Mettre à jour la liste de mots » (miseAJourMots.js) : le fichier est redemandé avec `?maj=…`. Ces requêtes
+  // vont toujours au réseau (jamais servies par le cache, jamais mises en cache) : sinon l'app répondrait « déjà
+  // à jour » avec l'ancienne liste. Hors connexion, la requête échoue et l'app l'annonce.
+  if (new URL(evenement.request.url).searchParams.has("maj")) {
+    evenement.respondWith(fetch(evenement.request, { cache: "no-store" }));
+    return;
+  }
 
   evenement.respondWith(
     (async () => {

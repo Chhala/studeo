@@ -67,6 +67,10 @@ export const iconeTelecharger = () =>
 export const iconeImporter = () =>
   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 14V4M12 4L8 8M12 4L16 8" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 16V18C5 19.1 5.9 20 7 20H17C18.1 20 19 19.1 19 18V16" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 
+// Deux flèches en cercle : « mettre à jour ».
+export const iconeActualiser = () =>
+  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 8A8 8 0 0 0 5.6 6.6M5 4V7H8" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 16A8 8 0 0 0 18.4 17.4M19 20V17H16" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
 export const iconeListe = () =>
   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="2" stroke="var(--accent)" stroke-width="1.8"/><path d="M8 9H16M8 13H16M8 17H12" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 

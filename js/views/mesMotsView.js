@@ -8,6 +8,7 @@ import * as characterEngine from "../characterEngine.js";
 import * as navigation from "../navigation.js";
 import * as audioEngine from "../audioEngine.js";
 import * as sons from "../sons.js";
+import * as miseAJourMots from "../miseAJourMots.js";
 import * as router from "../router.js";
 import * as overlays from "../overlays.js";
 import * as icons from "../icons.js";
@@ -34,6 +35,25 @@ const champRecherche = () => document.getElementById("wordsearch");
 
 // Vérification du formulaire d'ajout/modification : un mot déjà présent (même anglais ET même
 // traduction) est refusé avec un message, le formulaire restant ouvert (décision §5.38).
+// « Mettre à jour la liste de mots » (menu ⋮, décision §5.56) : va chercher la dernière liste publiée, l'intègre,
+// puis dit le résultat dans le petit message temporaire. La liste affichée est rafraîchie s'il y a du nouveau.
+async function mettreAJourLaListe() {
+  const resultat = await miseAJourMots.mettreAJour();
+  if (resultat.statut !== "ok") {
+    appShell.afficherToast("Impossible de récupérer la mise à jour. Vérifie ta connexion.");
+    return;
+  }
+  if (resultat.ajoutes === 0 && resultat.corriges === 0) {
+    appShell.afficherToast("Ta liste est déjà à jour !");
+    return;
+  }
+  const morceaux = [];
+  if (resultat.ajoutes > 0) morceaux.push(`${resultat.ajoutes} nouveau${resultat.ajoutes > 1 ? "x" : ""} mot${resultat.ajoutes > 1 ? "s" : ""} ajouté${resultat.ajoutes > 1 ? "s" : ""}`);
+  if (resultat.corriges > 0) morceaux.push(`${resultat.corriges} mot${resultat.corriges > 1 ? "s" : ""} corrigé${resultat.corriges > 1 ? "s" : ""}`);
+  renderCoquille();
+  appShell.afficherToast(morceaux.join(" et "));
+}
+
 const verifierDoublon = (idAIgnorer) => ({ motAnglais, traductionFrancais }) =>
   dataStore.motExiste(motAnglais, traductionFrancais, idAIgnorer) ? "Ce mot est déjà dans ta liste !" : null;
 
@@ -279,8 +299,8 @@ function renderCoquille(options = {}) {
       onExportComplet: () => dataStore.exporterSauvegardeComplete(),
       onImport: (fichier) => overlays.gererImportFichier(fichier),
       onExportVocabulaire: () => dataStore.exporterListeMotsSansProgression(),
-      onResetComplet: () => { dataStore.remiseAZeroComplete(); renderCoquille(); },
-      onResetEtoiles: () => { dataStore.reinitialiserEtoilesEtAchats(); renderCoquille(); }
+      onMettreAJourMots: mettreAJourLaListe,
+      onResetComplet: () => { dataStore.remiseAZeroComplete(); renderCoquille(); }
     });
   });
 

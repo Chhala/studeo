@@ -2,9 +2,24 @@
 // IMPORTANT : le statut initial est "non_teste", jamais "a_revoir" — un mot jamais posé en
 // session ne doit pas être confondu avec un mot sur lequel l'enfant s'est trompé.
 //
-// Pour mettre à jour cette liste (nouveau vocabulaire ajouté par l'enfant, à repousser sur
-// GitHub) : utilise le menu ⋮ de l'écran "Mes Mots" > "Exporter la liste de mots (sans
-// progression)", puis remplace le contenu du tableau ci-dessous par le fichier obtenu.
+// Ce fichier sert à DEUX choses (décision §5.56) :
+//  1. l'état de départ d'une installation neuve (tous les mots, au numéro de version VERSION_MOTS) ;
+//  2. la « mise à jour de la liste de mots » : le menu ⋮ de « Mes Mots » re-télécharge ce même fichier sur
+//     GitHub Pages et en intègre ce qui est plus récent que la version déjà intégrée sur l'appareil.
+//
+// Pour ajouter un nouveau lot : ajouter les mots à la fin de WORDS_SEED (ids à la suite, `v` = nouveau numéro
+// de version, `dateAjout` = date du lot), puis passer VERSION_MOTS à ce numéro. Pour corriger le libellé
+// français d'un mot déjà distribué : ajouter une entrée à CORRECTIONS_MOTS (avec le nouveau `v`) ET modifier le
+// mot dans WORDS_SEED, puis passer VERSION_MOTS à ce numéro. Un mot sans `v` est de la version 1.
+
+export const VERSION_MOTS = 3;
+
+// Corrections de libellés : appliquées sur un appareil seulement si le libellé actuel est EXACTEMENT `ancien`
+// (un mot modifié à la main par l'utilisateur n'est jamais touché).
+export const CORRECTIONS_MOTS = [
+  { v: 2, motAnglais: "circle", ancien: "entourer", nouveau: "entourer (une réponse)" },
+  { v: 2, motAnglais: "ice cream", ancien: "glace", nouveau: "crème glacée" }
+];
 
 export const WORDS_SEED = [
   { id: 1, motAnglais: "good morning", traductionFrancais: "bonjour (matin)", dateAjout: "2026-09-17", statut: "non_teste" },
@@ -122,5 +137,27 @@ export const WORDS_SEED = [
   { id: 113, motAnglais: "grey / gray", traductionFrancais: "gris", dateAjout: "2026-09-23", statut: "non_teste" },
   { id: 114, motAnglais: "pink", traductionFrancais: "rose", dateAjout: "2026-09-23", statut: "non_teste" },
   { id: 115, motAnglais: "brown", traductionFrancais: "marron", dateAjout: "2026-09-23", statut: "non_teste" },
-  { id: 116, motAnglais: "purple", traductionFrancais: "violet", dateAjout: "2026-09-23", statut: "non_teste" }
+  { id: 116, motAnglais: "purple", traductionFrancais: "violet", dateAjout: "2026-09-23", statut: "non_teste" },
+  { id: 117, v: 3, motAnglais: "father", traductionFrancais: "père", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 118, v: 3, motAnglais: "mother", traductionFrancais: "mère", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 119, v: 3, motAnglais: "dad / daddy", traductionFrancais: "papa", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 120, v: 3, motAnglais: "mum / mom", traductionFrancais: "maman", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 121, v: 3, motAnglais: "brother", traductionFrancais: "frère", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 122, v: 3, motAnglais: "sister", traductionFrancais: "sœur", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 123, v: 3, motAnglais: "siblings", traductionFrancais: "frères et sœurs", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 124, v: 3, motAnglais: "son", traductionFrancais: "fils (enfant)", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 125, v: 3, motAnglais: "daughter", traductionFrancais: "fille (enfant)", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 126, v: 3, motAnglais: "child", traductionFrancais: "enfant", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 127, v: 3, motAnglais: "children", traductionFrancais: "enfants", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 128, v: 3, motAnglais: "grandfather / grandpa", traductionFrancais: "grand-père", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 129, v: 3, motAnglais: "grandmother / grandma", traductionFrancais: "grand-mère", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 130, v: 3, motAnglais: "grandparents", traductionFrancais: "grands-parents", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 131, v: 3, motAnglais: "uncle", traductionFrancais: "oncle", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 132, v: 3, motAnglais: "aunt", traductionFrancais: "tante", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 133, v: 3, motAnglais: "cousin", traductionFrancais: "cousin / cousine", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 134, v: 3, motAnglais: "nephew", traductionFrancais: "neveu", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 135, v: 3, motAnglais: "niece", traductionFrancais: "nièce", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 136, v: 3, motAnglais: "husband", traductionFrancais: "mari", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 137, v: 3, motAnglais: "wife", traductionFrancais: "femme (épouse)", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 138, v: 3, motAnglais: "friend", traductionFrancais: "ami", dateAjout: "2026-10-17", statut: "non_teste" }
 ];

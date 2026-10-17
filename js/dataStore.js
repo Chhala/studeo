@@ -1,7 +1,7 @@
 // dataStore.js — Unique responsabilité : lire/écrire l'état applicatif dans localStorage.
 // Aucun autre module ne touche directement à localStorage : tout passe par ici.
 
-import { WORDS_SEED } from "./words.seed.js";
+import { WORDS_SEED, VERSION_MOTS } from "./words.seed.js";
 import { CHARACTER_DEFAULT_ID } from "./characters.config.js";
 import { BACKGROUND_NONE_ID } from "./backgrounds.config.js";
 
@@ -56,7 +56,11 @@ function migrerIdentifiantsPersonnages(donnees) {
 function etatParDefaut() {
   return {
     ordreFondsV2: true,
-    mots: structuredClone(WORDS_SEED),
+    // Le numéro de version d'ajout (`v`) ne sert qu'à la mise à jour de la liste : il n'est pas copié dans l'état.
+    mots: WORDS_SEED.map(({ v, ...mot }) => ({ ...mot })),
+    // Dernière version de la liste de mots (words.seed.js) intégrée sur cet appareil (décision §5.56) : une
+    // installation neuve part de la version courante du fichier ; un état sans ce champ vaut 1 (voir `charger`).
+    versionMots: VERSION_MOTS,
     totalEtoiles: ETOILES_DE_DEPART,
     personnageActif: CHARACTER_DEFAULT_ID,
     fondActif: BACKGROUND_NONE_ID,
@@ -177,6 +181,14 @@ export function dateLocaleHier() {
 
 let etat = null;
 
+// Version de la liste de mots d'un état lu sur le disque ou dans une sauvegarde. Un état SANS ce champ (créé
+// avant la mise à jour de la liste, ou sauvegarde ancienne) vaut 1 : sans cette règle, la fusion avec l'état
+// par défaut lui donnerait la version courante et il ne recevrait jamais les nouveaux mots (décision §5.56).
+function versionMotsDe(donnees) {
+  const v = Number(donnees && donnees.versionMots);
+  return Number.isInteger(v) && v >= 1 ? v : 1;
+}
+
 function charger() {
   try {
     const brut = localStorage.getItem(STORAGE_KEY);
@@ -186,6 +198,7 @@ function charger() {
     // anciennes ne cassent pas l'application.
     const charge = { ...etatParDefaut(), ...migrerIdentifiantsPersonnages(migrerOrdreFonds(parsed)) };
     charge.cartable = normaliserCartable(charge.cartable);
+    charge.versionMots = versionMotsDe(parsed);
     return charge;
   } catch (erreur) {
     console.error("Studeo: sauvegarde illisible, réinitialisation.", erreur);
@@ -274,6 +287,58 @@ export function modifierMot(id, changements) {
 export function supprimerMot(id) {
   etat.mots = etat.mots.filter((m) => m.id !== id);
   sauvegarder();
+}
+
+// ---------- Mise à jour de la liste de mots (décision §5.56) ----------
+
+export function getVersionMots() {
+  return etat.versionMots;
+}
+
+const FORMAT_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+// Intègre ce que le fichier de la liste (words.seed.js, re-téléchargé) apporte de PLUS RÉCENT que la version
+// déjà intégrée sur l'appareil :
+//  - les mots dont la version d'ajout (`v`, 1 par défaut) est supérieure — jamais un mot déjà présent (même
+//    anglais ET même traduction, `motExiste`) ; un mot supprimé par l'utilisateur ne revient donc pas tant que
+//    son numéro de version n'est pas dépassé ; ils reçoivent de NOUVEAUX identifiants (des mots ajoutés à la
+//    main ont pu prendre les numéros du fichier), le statut « non testé » et la date de leur lot ;
+//  - les corrections de libellés plus récentes, seulement si le libellé actuel est exactement l'ancien.
+// Renvoie { ajoutes, corriges }. Ne touche ni aux statuts, ni aux étoiles, ni au reste de la progression.
+export function appliquerMiseAJourMots({ version, mots = [], corrections = [] }) {
+  const locale = etat.versionMots;
+  const resultat = { ajoutes: 0, corriges: 0 };
+  if (!Number.isInteger(version) || version <= locale) return resultat;
+
+  for (const c of corrections) {
+    if (!c || !(c.v > locale)) continue;
+    const mot = etat.mots.find((m) => m.motAnglais === c.motAnglais && m.traductionFrancais === c.ancien);
+    if (mot && typeof c.nouveau === "string" && c.nouveau.trim()) {
+      mot.traductionFrancais = c.nouveau.trim();
+      resultat.corriges += 1;
+    }
+  }
+
+  let idSuivant = etat.mots.reduce((max, m) => Math.max(max, m.id), 0) + 1;
+  for (const w of mots) {
+    if (!w || !((w.v ?? 1) > locale)) continue;
+    if (typeof w.motAnglais !== "string" || typeof w.traductionFrancais !== "string") continue;
+    if (!w.motAnglais.trim() || !w.traductionFrancais.trim() || !FORMAT_DATE.test(w.dateAjout)) continue;
+    if (motExiste(w.motAnglais, w.traductionFrancais)) continue;
+    etat.mots.push({
+      id: idSuivant++,
+      motAnglais: w.motAnglais.trim(),
+      traductionFrancais: w.traductionFrancais.trim(),
+      dateAjout: w.dateAjout,
+      statut: "non_teste",
+      streakActuel: 0
+    });
+    resultat.ajoutes += 1;
+  }
+
+  etat.versionMots = version;
+  sauvegarder();
+  return resultat;
 }
 
 // Un mot passe "maitrise" après 2 bonnes réponses CONSÉCUTIVES données lors de 2 JOURS
@@ -661,6 +726,7 @@ export function importerSauvegarde(contenuJSON) {
   const donnees = JSON.parse(contenuJSON);
   etat = { ...etatParDefaut(), ...migrerIdentifiantsPersonnages(migrerOrdreFonds(donnees)) };
   etat.cartable = normaliserCartable(etat.cartable);
+  etat.versionMots = versionMotsDe(donnees);
   sauvegarder();
 }
 
@@ -708,31 +774,12 @@ export function remiseAZeroComplete() {
   etat.derniereEtoileDefi = null;
   etat.aideRecherche = { affichages: 0, utilisee: false };
   // Les badges repartent aussi de zéro (sinon « 75 mots maîtrisés » resterait affiché avec 0 mot
-  // maîtrisé) ; « Réinitialiser étoiles & achats », elle, les conserve (décision §5.53).
+  // maîtrisé). (La « Réinitialisation étoiles & achats », qui les conservait, a été supprimée : §5.57.)
   etat.badges = badgesParDefaut();
   etat.suiviBadges = suiviBadgesParDefaut();
   // Les objectifs du cartable disparaissent SANS rendre leurs étoiles : le solde repart à 5, comme le reste
   // (rendre les étoiles le ferait dépasser le solde de départ, décision §5.55).
   etat.cartable = cartableParDefaut();
-  sauvegarder();
-}
-
-// Réinitialisation étoiles & achats uniquement : ne touche ni aux mots, ni à leur statut,
-// ni au taux de réussite — seule la couche "jeu/récompense" est repartie à zéro (y compris
-// les lots déjà réussis et l'historique d'étoiles quotidiennes, qui relèvent de cette couche).
-export function reinitialiserEtoilesEtAchats() {
-  etat.totalEtoiles = ETOILES_DE_DEPART;
-  etat.personnageActif = CHARACTER_DEFAULT_ID;
-  etat.fondActif = BACKGROUND_NONE_ID;
-  etat.itemsDebloques = [
-    `character:${CHARACTER_DEFAULT_ID}`,
-    `background:${BACKGROUND_NONE_ID}`
-  ];
-  etat.lotsRevisionReussis = [];
-  etat.revisionDuJour = { date: null, parLot: {}, complements: {}, aApprendre: {} };
-  etat.etoilesRevisionDuJour = { date: null, lots: [] };
-  etat.derniereEtoileDefi = null;
-  etat.cartable = cartableParDefaut();   // objectifs supprimés, étoiles non rendues (solde remis à 5 ci-dessus)
   sauvegarder();
 }
 
