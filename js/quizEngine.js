@@ -110,14 +110,20 @@ export function longueurBonusDuJour() {
 
 // ---------- Sélection du/des lot(s) de révision ----------
 
+// Nombre de mots réellement posés par la Révision d'un lot : un petit lot est complété à 10 mots
+// (décision §5.38), dans la limite du vocabulaire existant. C'est ce nombre que l'interface annonce.
+export function nbMotsRevision(nbMotsDuLot) {
+  return Math.min(Math.max(nbMotsDuLot, NB_MIN_MOTS_LOT_REVISION), dataStore.getMots().length);
+}
+
 // Les N dates d'ajout distinctes les plus récentes (la plus récente en premier), avec leur
-// nombre de mots — sert à proposer le choix "quel questionnaire réviser ?".
+// nombre de mots (compléments compris) — sert à proposer le choix "quel questionnaire réviser ?".
 export function lotsDisponibles() {
   const mots = dataStore.getMots();
   const dates = [...new Set(mots.map((m) => m.dateAjout))].sort((a, b) => (a < b ? 1 : -1));
   return dates.slice(0, NB_LOTS_DISPONIBLES).map((dateAjout) => ({
     dateAjout,
-    nbMots: mots.filter((m) => m.dateAjout === dateAjout).length
+    nbMots: nbMotsRevision(mots.filter((m) => m.dateAjout === dateAjout).length)
   }));
 }
 
@@ -136,7 +142,7 @@ export function lotsObligatoires() {
 export function prochainLotObligatoire() {
   const dateAjout = lotsObligatoires()[0];
   if (dateAjout === undefined) return null;
-  return { dateAjout, nbMots: dataStore.getMots().filter((m) => m.dateAjout === dateAjout).length };
+  return { dateAjout, nbMots: nbMotsRevision(dataStore.getMots().filter((m) => m.dateAjout === dateAjout).length) };
 }
 
 // ---------- Création de session ----------

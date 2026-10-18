@@ -94,13 +94,13 @@ export function phraseSacHabituelle(nbObjectifs) {
 }
 
 // Un toucher sur une ligne : l'avancement s'il y a des étoiles (pas de chiffre quand l'objectif est
-// plein : on demande un parent), sinon quoi faire.
+// plein : on demande un parent), sinon le total à atteindre et quoi faire.
 export function phraseSacLigne(objectif) {
   if (objectif.versees >= objectif.cout) return "Objectif rempli ! Appelle un parent pour le valider ensemble.";
   if (objectif.versees > 0) {
     return `Pour cet objectif, tu as ${objectif.versees} étoile${objectif.versees > 1 ? "s" : ""}, et il t'en faut ${objectif.cout}.`;
   }
-  return "Glisse la ligne vers la gauche pour verser des étoiles.";
+  return `Il te faut ${objectif.cout} étoile${objectif.cout > 1 ? "s" : ""}. Glisse la ligne vers la gauche pour en verser.`;
 }
 
 // Demande du code parent (pour valider comme pour créer) : une phrase différente de la précédente.

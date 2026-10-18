@@ -21,7 +21,7 @@ export function render() {
   const taux = dataStore.getTauxDeReussite();
 
   const derniereDate = dataStore.getDerniereDateAjout();
-  const nbDernierLot = mots.filter((m) => m.dateAjout === derniereDate).length;
+  const nbDernierLot = quizEngine.nbMotsRevision(mots.filter((m) => m.dateAjout === derniereDate).length);
   // Un lot en retard est imposé en premier (décision §5.40) : le sous-titre annonce celui-là.
   const lotImpose = quizEngine.prochainLotObligatoire();
   const sousTitreRevision = lotImpose
