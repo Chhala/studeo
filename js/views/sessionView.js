@@ -134,7 +134,7 @@ function renderChoixRevision() {
             <button type="button" class="bouton-cta ${i === 0 ? "principal" : "secondaire"}" data-date="${lot.dateAjout}" style="width:100%;">
               <span style="display:flex;flex-direction:column;align-items:flex-start;">
                 <span class="font-display">${libelleLot(lot.dateAjout, i === 0)}</span>
-                <span class="bouton-cta-sous-titre" style="${i === 0 ? "" : "color:var(--text-muted);"}">${lot.nbMots} mot${lot.nbMots > 1 ? "s" : ""}</span>
+                <span class="bouton-cta-sous-titre" style="${i === 0 ? "" : "color:var(--text-muted);"}">${lot.nbMots} mot${lot.nbMots > 1 ? "s" : ""}${lot.aRetravailler ? " à retravailler" : ""}</span>
               </span>
             </button>
           `).join("")}

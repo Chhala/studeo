@@ -21,12 +21,16 @@ export function render() {
   const taux = dataStore.getTauxDeReussite();
 
   const derniereDate = dataStore.getDerniereDateAjout();
-  const nbDernierLot = quizEngine.nbMotsRevision(mots.filter((m) => m.dateAjout === derniereDate).length);
+  const dernierLot = quizEngine.resumeLot(derniereDate);
   // Un lot en retard est imposé en premier (décision §5.40) : le sous-titre annonce celui-là.
+  // Après un passage incomplet, il annonce les mots restant à réussir (« à retravailler »).
   const lotImpose = quizEngine.prochainLotObligatoire();
+  const pluriel = (n) => (n > 1 ? "s" : "");
   const sousTitreRevision = lotImpose
-    ? `${lotImpose.nbMots} mot${lotImpose.nbMots > 1 ? "s" : ""} à réviser`
-    : `${nbDernierLot} mot${nbDernierLot > 1 ? "s" : ""} du dernier ajout`;
+    ? `${lotImpose.nbMots} mot${pluriel(lotImpose.nbMots)} ${lotImpose.aRetravailler ? "à retravailler" : "à réviser"}`
+    : dernierLot.aRetravailler
+      ? `${dernierLot.nbMots} mot${pluriel(dernierLot.nbMots)} à retravailler`
+      : `${dernierLot.nbMots} mot${pluriel(dernierLot.nbMots)} du dernier ajout`;
 
   appShell.getView().innerHTML = `
     <div class="entete">

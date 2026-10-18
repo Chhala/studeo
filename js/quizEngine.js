@@ -110,10 +110,21 @@ export function longueurBonusDuJour() {
 
 // ---------- Sélection du/des lot(s) de révision ----------
 
-// Nombre de mots réellement posés par la Révision d'un lot : un petit lot est complété à 10 mots
-// (décision §5.38), dans la limite du vocabulaire existant. C'est ce nombre que l'interface annonce.
-export function nbMotsRevision(nbMotsDuLot) {
-  return Math.min(Math.max(nbMotsDuLot, NB_MIN_MOTS_LOT_REVISION), dataStore.getMots().length);
+// Ce que l'interface annonce pour un lot (Accueil, choix du questionnaire) : { nbMots, aRetravailler }.
+// - Premier passage du jour : la taille du lot, complété à 10 mots s'il est petit (décision §5.38),
+//   dans la limite du vocabulaire existant.
+// - Rattrapage (une partie du lot est déjà réussie aujourd'hui, le reste non) : le nombre de mots
+//   RESTANT à réussir, le même chiffre que dit la mascotte à l'écran de fin ; aRetravailler = true.
+export function resumeLot(dateAjout) {
+  const lot = dataStore.getMots().filter((m) => m.dateAjout === dateAjout);
+  const idsValides = new Set(dataStore.getMotsValidesRevisionDuJour(dateAjout));
+  if (idsValides.size > 0) {
+    // Des mots sont déjà validés aujourd'hui : les compléments éventuels sont donc déjà mémorisés.
+    const restants = [...lot, ...complementsDuJour(dateAjout, lot)].filter((m) => !idsValides.has(m.id)).length;
+    if (restants > 0) return { nbMots: restants, aRetravailler: true };
+  }
+  const nbMots = Math.min(Math.max(lot.length, NB_MIN_MOTS_LOT_REVISION), dataStore.getMots().length);
+  return { nbMots, aRetravailler: false };
 }
 
 // Les N dates d'ajout distinctes les plus récentes (la plus récente en premier), avec leur
@@ -123,7 +134,7 @@ export function lotsDisponibles() {
   const dates = [...new Set(mots.map((m) => m.dateAjout))].sort((a, b) => (a < b ? 1 : -1));
   return dates.slice(0, NB_LOTS_DISPONIBLES).map((dateAjout) => ({
     dateAjout,
-    nbMots: nbMotsRevision(mots.filter((m) => m.dateAjout === dateAjout).length)
+    ...resumeLot(dateAjout)
   }));
 }
 
@@ -142,7 +153,7 @@ export function lotsObligatoires() {
 export function prochainLotObligatoire() {
   const dateAjout = lotsObligatoires()[0];
   if (dateAjout === undefined) return null;
-  return { dateAjout, nbMots: nbMotsRevision(dataStore.getMots().filter((m) => m.dateAjout === dateAjout).length) };
+  return { dateAjout, ...resumeLot(dateAjout) };
 }
 
 // ---------- Création de session ----------
