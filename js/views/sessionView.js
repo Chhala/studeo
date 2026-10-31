@@ -254,27 +254,40 @@ function renderQuestion() {
   const numero = session.indexCourant + 1;
   const total = session.questions.length;
 
-  appShell.getView().innerHTML = `
-    <div class="ecran-session">
-      ${rendreEntete({ confirmerSortie: true })}
-      ${rendreMascotte("avatar-session")}
-      <div class="session-question" id="zone-question">
+  const formulaire = `
         <form id="form-reponse" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;">
           <label for="champ-reponse" class="visually-hidden">Traduction en anglais</label>
           <input id="champ-reponse" class="session-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-gramm="false" placeholder="Ta réponse...">
           <button type="submit" class="session-valider font-display" style="width:100%;max-width:240px;">Valider</button>
         </form>
-      </div>
-    </div>
   `;
-
   const precedenteCorrecte = session.reponses.length > 0 && session.reponses[session.reponses.length - 1].correct;
-  lierMascotte("avatar-session", mascotteTexte.phraseQuestion(mot.traductionFrancais, numero, total, precedenteCorrecte));
-  attacherSortie();
+  const phrase = mascotteTexte.phraseQuestion(mot.traductionFrancais, numero, total, precedenteCorrecte);
 
   const vue = appShell.getView();
+  const zoneExistante = vue.querySelector("#zone-question");
+  const bulleExistante = vue.querySelector("#avatar-session-bulle");
+  if (zoneExistante && bulleExistante) {
+    // Question suivante : seuls la zone de saisie et la bulle changent. L'en-tête et la carte de la mascotte
+    // restent en place (les reconstruire à chaque question faisait « sursauter » l'écran sur iPhone) ; la
+    // mascotte revient simplement à l'attente (après une erreur elle restait sur sa dernière image).
+    zoneExistante.innerHTML = formulaire;
+    characterEngine.jouerAnimation("idle");
+    appShell.ecrireTexte(bulleExistante, phrase);
+  } else {
+    vue.innerHTML = `
+    <div class="ecran-session">
+      ${rendreEntete({ confirmerSortie: true })}
+      ${rendreMascotte("avatar-session")}
+      <div class="session-question" id="zone-question">${formulaire}</div>
+    </div>
+  `;
+    lierMascotte("avatar-session", phrase);
+    attacherSortie();
+  }
+
   const champ = vue.querySelector("#champ-reponse");
-  champ.focus();
+  champ.focus({ preventScroll: true });   // le champ est déjà en haut de l'écran : iOS n'a pas à faire glisser la page
   sons.brancherFrappe(champ);
 
   vue.querySelector("#form-reponse").addEventListener("submit", (evenement) => {
