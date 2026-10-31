@@ -17,6 +17,7 @@ export function afficherRoute({ route, sousRoute, params }) {
   characterEngine.arreterVieAleatoire();
   vieMascottes.arreter();
   sacView.arreter();   // aucun minuteur de « Mon Sac » ne doit parler une fois la page changée
+  sessionView.arreter();   // le champ invisible qui garde le clavier ouvert pendant une session
 
   switch (route) {
     case "mots":

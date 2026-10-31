@@ -25,6 +25,45 @@ import * as mascotteTexte from "../mascotteTexte.js";
 
 let session = null;
 
+// ---------- Clavier gardé ouvert pendant toute la session ----------
+// Chaque question remplace tout l'écran, donc le champ de réponse (qui a le focus) disparaît à la
+// validation et le clavier se fermait, puis remontait à « Continuer » : deux allers-retours par
+// question. Pour l'éviter, un champ invisible prend le focus AU MOMENT de la validation (dans le même
+// geste, avant que le champ visible ne soit retiré) : le clavier reste ouvert pendant la correction,
+// puis le champ de la question suivante reprend le focus au tap sur « Continuer ». Il n'est retiré
+// qu'à la fin de la session (bilan, sortie), ce qui referme le clavier.
+// La touche « Entrée » n'y fait rien : un double appui ne doit pas sauter la correction non lue.
+let porteClavier = null;
+
+function garderClavier() {
+  if (!porteClavier || !porteClavier.isConnected) {
+    porteClavier = document.createElement("input");
+    porteClavier.type = "text";
+    porteClavier.className = "porte-clavier";
+    porteClavier.setAttribute("autocomplete", "off");
+    porteClavier.setAttribute("autocapitalize", "off");
+    porteClavier.setAttribute("autocorrect", "off");
+    porteClavier.setAttribute("spellcheck", "false");
+    porteClavier.setAttribute("data-gramm", "false");
+    porteClavier.setAttribute("aria-hidden", "true");
+    porteClavier.tabIndex = -1;
+    porteClavier.addEventListener("keydown", (evenement) => {
+      if (evenement.key === "Enter") evenement.preventDefault();
+    });
+    porteClavier.addEventListener("input", () => { porteClavier.value = ""; });
+    appShell.getShell().appendChild(porteClavier);
+  }
+  porteClavier.focus();
+}
+
+// Appelée à la fin de la session et par uiRenderer à chaque changement d'écran.
+export function arreter() {
+  if (porteClavier) {
+    porteClavier.remove();   // retirer un champ qui a le focus referme le clavier
+    porteClavier = null;
+  }
+}
+
 export function render(type) {
   if (type === "defi") {
     renderChoixLongueurDefi();
@@ -254,6 +293,7 @@ function traiterReponse(saisie) {
   const bulle = vue.querySelector("#avatar-session-bulle");
   const zoneQuestion = vue.querySelector("#zone-question");
 
+  garderClavier();   // avant de retirer le champ visible, dans le geste de validation
   const { correct, bonneReponseAffichee } = quizEngine.soumettreReponse(session, saisie);
 
   characterEngine.jouerAnimation(correct ? "jump" : "hurt");
@@ -294,6 +334,7 @@ function traiterReponse(saisie) {
 }
 
 function renderRecap() {
+  arreter();   // plus de champ à venir : le clavier se referme
   const { totalNote, bonnesReponsesNotees, scoreParfait, etoilesGagnees, bonusGagne, motsRestants, tailleLot, rienAApprendre } = quizEngine.finaliserSession(session);
 
   // Le score et l'étoile gagnée sont dits par la mascotte (carte blanche, toujours lisible) plutôt

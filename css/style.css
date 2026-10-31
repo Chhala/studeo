@@ -555,6 +555,21 @@ html.ios-app #app-shell { position: absolute; bottom: auto; height: 100lvh; }
   clip: rect(0 0 0 0);
 }
 
+/* Champ invisible qui garde le clavier ouvert pendant la correction d'une session (sessionView.js).
+   Ni display:none ni visibility:hidden (le focus serait perdu) ; police 16 px pour éviter le zoom d'iOS. */
+.porte-clavier {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  font-size: 16px;
+}
+
 .segmented {
   margin: 14px 24px 0;
   background: var(--bg-card);
