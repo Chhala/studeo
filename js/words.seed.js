@@ -12,7 +12,7 @@
 // français d'un mot déjà distribué : ajouter une entrée à CORRECTIONS_MOTS (avec le nouveau `v`) ET modifier le
 // mot dans WORDS_SEED, puis passer VERSION_MOTS à ce numéro. Un mot sans `v` est de la version 1.
 
-export const VERSION_MOTS = 3;
+export const VERSION_MOTS = 4;
 
 // Corrections de libellés : appliquées sur un appareil seulement si le libellé actuel est EXACTEMENT `ancien`
 // (un mot modifié à la main par l'utilisateur n'est jamais touché).
@@ -159,5 +159,44 @@ export const WORDS_SEED = [
   { id: 135, v: 3, motAnglais: "niece", traductionFrancais: "nièce", dateAjout: "2026-10-17", statut: "non_teste" },
   { id: 136, v: 3, motAnglais: "husband", traductionFrancais: "mari", dateAjout: "2026-10-17", statut: "non_teste" },
   { id: 137, v: 3, motAnglais: "wife", traductionFrancais: "femme (épouse)", dateAjout: "2026-10-17", statut: "non_teste" },
-  { id: 138, v: 3, motAnglais: "friend", traductionFrancais: "ami", dateAjout: "2026-10-17", statut: "non_teste" }
+  { id: 138, v: 3, motAnglais: "friend", traductionFrancais: "ami", dateAjout: "2026-10-17", statut: "non_teste" },
+  { id: 139, v: 4, motAnglais: "smart / clever", traductionFrancais: "intelligent / malin", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 140, v: 4, motAnglais: "curious", traductionFrancais: "curieux", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 141, v: 4, motAnglais: "hard-working", traductionFrancais: "travailleur", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 142, v: 4, motAnglais: "sporty", traductionFrancais: "sportif", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 143, v: 4, motAnglais: "talkative", traductionFrancais: "bavard", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 144, v: 4, motAnglais: "energetic", traductionFrancais: "énergique", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 145, v: 4, motAnglais: "quiet", traductionFrancais: "calme / discret", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 146, v: 4, motAnglais: "but", traductionFrancais: "mais", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 147, v: 4, motAnglais: "very", traductionFrancais: "très", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 148, v: 4, motAnglais: "shy", traductionFrancais: "timide", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 149, v: 4, motAnglais: "friendly", traductionFrancais: "amical / sympathique", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 150, v: 4, motAnglais: "funny", traductionFrancais: "drôle", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 151, v: 4, motAnglais: "lazy", traductionFrancais: "paresseux", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 152, v: 4, motAnglais: "kind", traductionFrancais: "gentil", dateAjout: "2026-11-12", statut: "non_teste" },
+  { id: 153, v: 4, motAnglais: "short", traductionFrancais: "petit / court", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 154, v: 4, motAnglais: "tall", traductionFrancais: "grand", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 155, v: 4, motAnglais: "straight", traductionFrancais: "raide (cheveux)", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 156, v: 4, motAnglais: "eye", traductionFrancais: "œil", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 157, v: 4, motAnglais: "hair", traductionFrancais: "cheveux", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 158, v: 4, motAnglais: "slim / thin", traductionFrancais: "mince", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 159, v: 4, motAnglais: "chubby", traductionFrancais: "potelé", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 160, v: 4, motAnglais: "curly", traductionFrancais: "bouclé", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 161, v: 4, motAnglais: "wavy", traductionFrancais: "ondulé", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 162, v: 4, motAnglais: "long", traductionFrancais: "long", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 163, v: 4, motAnglais: "beard", traductionFrancais: "barbe", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 164, v: 4, motAnglais: "bald", traductionFrancais: "chauve", dateAjout: "2026-11-13", statut: "non_teste" },
+  { id: 165, v: 4, motAnglais: "jacket", traductionFrancais: "veste", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 166, v: 4, motAnglais: "dress", traductionFrancais: "robe", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 167, v: 4, motAnglais: "coat", traductionFrancais: "manteau", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 168, v: 4, motAnglais: "trousers", traductionFrancais: "pantalon", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 169, v: 4, motAnglais: "skirt", traductionFrancais: "jupe", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 170, v: 4, motAnglais: "hat", traductionFrancais: "chapeau", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 171, v: 4, motAnglais: "jumper", traductionFrancais: "pull", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 172, v: 4, motAnglais: "shirt", traductionFrancais: "chemise", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 173, v: 4, motAnglais: "suit", traductionFrancais: "costume", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 174, v: 4, motAnglais: "tie", traductionFrancais: "cravate", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 175, v: 4, motAnglais: "bow tie", traductionFrancais: "nœud papillon", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 176, v: 4, motAnglais: "shoes", traductionFrancais: "chaussures", dateAjout: "2026-11-14", statut: "non_teste" },
+  { id: 177, v: 4, motAnglais: "socks", traductionFrancais: "chaussettes", dateAjout: "2026-11-14", statut: "non_teste" }
 ];
